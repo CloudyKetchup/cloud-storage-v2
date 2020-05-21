@@ -1,0 +1,4 @@
+rootProject.name="cloud-storage-v2"
+
+include ":eureka-server",
+        ":storage-database-servic3"

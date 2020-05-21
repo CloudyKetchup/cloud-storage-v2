@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  # database (MongoDB)
+  mongo-db:
+    container_name: cloud-storage-mongod_db
+    image: mongo
+    environment:
+      MONGO_INITDB_DATABASE: cloud-storage
+    volumes:
+      - ./mongo-volume:/data/db
+    ports:
+      - 27017:27017

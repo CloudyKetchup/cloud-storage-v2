@@ -1,0 +1,14 @@
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  application:
+    name: eureka-server
+eureka:
+    client:
+      fetch-registry: false
+      register-with-eureka: false
+    dashboard:
+      enabled: true
+server:
+  port: 8761
