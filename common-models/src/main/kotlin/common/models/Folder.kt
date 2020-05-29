@@ -8,5 +8,6 @@ data class Folder(
   var path        : String,
   var folder      : String,    // folder id
   var size        : Int,
-  val dateCreated : String
+  val dateCreated : String,
+  val root		  : Boolean
 )
