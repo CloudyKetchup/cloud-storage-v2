@@ -22,6 +22,8 @@ class FolderService @Autowired constructor(private val repository: FolderReposit
 
 	override suspend fun findByPath(path: String): Folder? = repository.findByPath(path).awaitFirstOrNull()
 
+	override suspend fun all(): Flow<Folder> = repository.findAll().asFlow()
+
 	override suspend fun save(entity: Folder): Folder?
 	{
 		return if (findById(entity.id) != null)
