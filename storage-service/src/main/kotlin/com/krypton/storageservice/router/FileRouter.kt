@@ -2,16 +2,16 @@ package com.krypton.storageservice.router
 
 import com.krypton.storageservice.model.FileMoveData
 import com.krypton.storageservice.model.response.FileUploadResponse
-import com.krypton.storageservice.service.storage.file.StorageFileService
+import com.krypton.storageservice.service.storage.file.IStorageFileService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.reactive.function.server.ServerResponse.*
-import java.io.File
-import common.models.File as FileModel
+import common.models.File
 import common.models.Folder
+import java.io.File as FsFile
 
 /**
  * Router for handling requests related to files storage management
@@ -38,10 +38,8 @@ class FileRouter @Autowired constructor(handler: FileHandler)
  * and filters invalid requests
  * */
 @Component
-class FileHandler @Autowired constructor(storageFileService: StorageFileService)
+class FileHandler @Autowired constructor(private val helper: FileHandlerHelper)
 {
-	private val helper = FileRouterHelper(storageFileService)
-
 	/**
 	 * Save new file to storage
 	 *
@@ -66,12 +64,12 @@ class FileHandler @Autowired constructor(storageFileService: StorageFileService)
 	/**
 	 * Delete file from storage
 	 *
-	 * @param request	incoming request with [FileModel] body
+	 * @param request	incoming request with [File] body
 	 * @return http status code
 	 * */
 	suspend fun delete(request: ServerRequest): ServerResponse
 	{
-		val file = request.awaitBodyOrNull<FileModel>()
+		val file = request.awaitBodyOrNull<File>()
 
 		return if (file != null)
 			helper.delete(file)
@@ -98,12 +96,12 @@ class FileHandler @Autowired constructor(storageFileService: StorageFileService)
 	/**
 	 * Rename file
 	 *
-	 * @param request	incoming request with [FileModel] body and "name" query param
-	 * @return [FileModel] with updated name and path
+	 * @param request	incoming request with [File] body and "name" query param
+	 * @return [File] with updated name and path
 	 * */
 	suspend fun rename(request: ServerRequest): ServerResponse
 	{
-		val file 	= request.awaitBodyOrNull<FileModel>()
+		val file 	= request.awaitBodyOrNull<File>()
 		val name 	= request.queryParam("name")
 
 		return if (file != null && name.isPresent)
@@ -126,11 +124,11 @@ class FileHandler @Autowired constructor(storageFileService: StorageFileService)
 	 *
 	 * @param request	incoming request with [FileMoveData] body
 	 * @param move		move operation callback with file and folder params
-	 * @return server response with updated [FileModel] or error code
+	 * @return server response with updated [File] or error code
 	 * */
 	private suspend fun moveOperation(
 		request: ServerRequest,
-		move : suspend (file: FileModel, folder: Folder) -> ServerResponse
+		move : suspend (file: File, folder: Folder) -> ServerResponse
 	): ServerResponse
 	{
 		val moveData = request.awaitBodyOrNull<FileMoveData>()
@@ -151,30 +149,31 @@ class FileHandler @Autowired constructor(storageFileService: StorageFileService)
  * Helper class that handler logic of [FileHandler], purpose of handler is
  * to get and validate the data, and helper will execute all the operations
  * */
-class FileRouterHelper(private val storageFileService: StorageFileService)
+@Component
+class FileHandlerHelper(private val storageFileService: IStorageFileService)
 {
 	/**
 	 * Save file part to storage with given path
 	 *
-	 * @param filePart	part data file
-	 * @param path		folder path for save
+	 * @param filePart		part data file
+	 * @param folderPath 	folder path for save
 	 * @return [FileUploadResponse] body
 	 * */
-	suspend fun save(filePart: FilePart, path: String): ServerResponse
+	suspend fun save(filePart: FilePart, folderPath: String): ServerResponse
 	{
-		val file = File("${path}/${filePart.filename()}")
+		val path = "${folderPath}/${filePart.filename()}"
 		// check if file already exist
-		if (file.exists())
+		if (storageFileService.exists(path))
 			return badRequest().bodyValueAndAwait("File already exist")
 		// save file
-		val newFile = storageFileService.saveFromFilePart(filePart, file)
+		val newFile = storageFileService.saveFromFilePart(filePart, path)
 
 		// check if file was created
 		if (newFile?.exists() == true && newFile.length() > 0)
 		{
 			return ok().bodyValueAndAwait(FileUploadResponse(
 				newFile.name,
-				newFile.path,
+				path,
 				newFile.length(),
 				newFile.extension
 			))
@@ -185,16 +184,16 @@ class FileRouterHelper(private val storageFileService: StorageFileService)
 	/**
 	 * Delete file from storage
 	 *
-	 * @param fileModel		[FileModel] I think -_-
+	 * @param file		[File]
 	 * @return http status, 404, 505, or [ok]
 	 * */
-	suspend fun delete(fileModel: FileModel): ServerResponse
+	suspend fun delete(file: File): ServerResponse
 	{
-		val file = File(fileModel.path)
+		val path = file.path
 
-		if (!file.exists()) return notFound().buildAndAwait()
+		if (!storageFileService.exists(path)) return notFound().buildAndAwait()
 
-		val deleted = storageFileService.delete(file)
+		val deleted = storageFileService.delete(path)
 
 		return if (deleted)
 			ok().buildAndAwait()
@@ -205,81 +204,82 @@ class FileRouterHelper(private val storageFileService: StorageFileService)
 	/**
 	 * Move file to another directory
 	 *
-	 * @param fileModel		and again [FileModel] -_-
+	 * @param file			and again [File] -_-
 	 * @param folder		folder where to move file
-	 * @return [FileModel] with updated path
+	 * @return [File] with updated path
 	 * */
-	suspend fun move(fileModel: FileModel, folder: Folder): ServerResponse
+	suspend fun move(file: File, folder: Folder): ServerResponse
 	{
-		return moveFileAndNewPath(fileModel, folder, storageFileService::move)
+		return moveFileAndNewPath(file, folder, storageFileService::move)
 	}
 
 	/**
 	 * Copy file to another directory
 	 *
-	 * @param fileModel		[FileModel]
+	 * @param file			[File]
 	 * @param folder		folder where to copy file
-	 * @return newly copied file [FileModel]
+	 * @return newly copied file [File]
 	 * */
-	suspend fun copy(fileModel: FileModel, folder: Folder): ServerResponse
+	suspend fun copy(file: File, folder: Folder): ServerResponse
 	{
-		return moveFileAndNewPath(fileModel, folder, storageFileService::copy)
+		return moveFileAndNewPath(file, folder, storageFileService::copy)
 	}
 
 	/**
 	 * Rename file
 	 *
-	 * @param fileModel		[FileModel]
+	 * @param file			[File]
 	 * @param newName		new file name
 	 * @return file with updated name and path
 	 * */
-	suspend fun rename(fileModel: FileModel, newName : String): ServerResponse
+	suspend fun rename(file: File, newName : String): ServerResponse
 	{
-		val file	= File(fileModel.path)
-		val newPath = "${file.parent}/$newName"
+		val path	= file.path
+		val fsFile	= FsFile(path)
+		val newPath = "${fsFile.parent}/$newName"
 
-		if (!file.exists()) return notFound().buildAndAwait()
+		if (!storageFileService.exists(path)) return notFound().buildAndAwait()
 
-		storageFileService.move(file, newPath)
+		storageFileService.move(path, newPath)
 
-		return if (File(newPath).exists())
-			ok().bodyValueAndAwait(fileModel.apply {
-				name = newName
-				path = newPath
+		return if (storageFileService.exists(newPath))
+			ok().bodyValueAndAwait(file.apply {
+				this.name = newName
+				this.path = newPath
 			})
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
 	}
 
 	/**
-	 * Accepts file [FileModel] and folder [Folder] models for move operation,
+	 * Accepts file [File] and folder [Folder] models for move operation,
 	 * basically, we check if file and folder for move exists,
 	 * otherwise return 404
 	 *
 	 * We create [File] entity and new path, and return em via callback,
 	 * pretty clear if you ask me
 	 *
-	 * @param fileModel		[FileModel]
+	 * @param file			[File]
 	 * @param folder		[Folder]
 	 * @param move			suspend callback for move operation of choice
 	 * @return [ok] if move operation succeeded or [status] with 505 if not
 	 * */
 	private suspend fun moveFileAndNewPath(
-		fileModel: FileModel,
+		file: File,
 		folder: Folder,
-		move : suspend (file: File, newPath: String) -> File?
+		move : suspend (path: String, newPath: String) -> FsFile?
 	): ServerResponse
 	{
-		val file = File(fileModel.path)
 		// check if file and folder for move exist
-		if (!file.exists() && !File(folder.path).exists()) return notFound().buildAndAwait()
+		if (!storageFileService.exists(file.path) || !storageFileService.exists(folder.path))
+			return notFound().buildAndAwait()
 
-		val newPath = "${folder.path}/${fileModel.name}"
+		val newPath = "${folder.path}/${file.name}"
 
-		val movedFile = move(file, newPath)
+		val movedFile = move(file.path, newPath)
 
 		return if (movedFile != null)
-			ok().bodyValueAndAwait(fileModel.apply { path = newPath })
+			ok().bodyValueAndAwait(file.apply { path = newPath })
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
 	}
