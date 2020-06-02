@@ -2,7 +2,7 @@ package com.krypton.storageservice.router
 
 import com.krypton.storageservice.model.FolderMoveData
 import com.krypton.storageservice.model.response.FolderCreateResponse
-import com.krypton.storageservice.service.storage.folder.StorageFolderService
+import com.krypton.storageservice.service.storage.folder.IStorageFolderService
 import common.models.Folder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
@@ -35,10 +35,8 @@ class FolderRouter @Autowired constructor(handler: FolderHandler)
  * and filters invalid requests
  * */
 @Component
-class FolderHandler @Autowired constructor(storageFolderService: StorageFolderService)
+class FolderHandler @Autowired constructor(private val helper: FolderHandlerHelper)
 {
-	private val helper = FolderHandlerHelper(storageFolderService)
-
 	/**
 	 * Creates a new folder in storage on specified path
 	 *
@@ -136,7 +134,8 @@ class FolderHandler @Autowired constructor(storageFolderService: StorageFolderSe
  * Helper class that handler logic of [FolderHandler], purpose of handler is
  * to get and validate the data, and helper will execute all the operations
  * */
-class FolderHandlerHelper(private val storageFolderService: StorageFolderService)
+@Component
+class FolderHandlerHelper @Autowired constructor(private val storageFolderService: IStorageFolderService)
 {
 	/**
 	 * Create new folder
@@ -147,14 +146,15 @@ class FolderHandlerHelper(private val storageFolderService: StorageFolderService
 	 * */
 	suspend fun create(parentFolder: Folder, name: String): ServerResponse
 	{
+		val path 		= "${parentFolder.path}/$name"	// path from parent folder
 		// check if folder already exists
-		if (File("${parentFolder.path}/$name").exists())
+		if (storageFolderService.exists(path))
 			return status(INTERNAL_SERVER_ERROR).bodyValueAndAwait("Folder already exist")
 
-		val folder = storageFolderService.createFolder(parentFolder.path, name)
+		val folder = storageFolderService.createFolder(path)
 
 		return if (folder != null)
-			ok().bodyValueAndAwait(FolderCreateResponse(folder.name, folder.path, folder.length()))
+			ok().bodyValueAndAwait(FolderCreateResponse(folder.name, path, folder.length()))
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
 	}
@@ -167,11 +167,11 @@ class FolderHandlerHelper(private val storageFolderService: StorageFolderService
 	 * */
 	suspend fun delete(folder : Folder): ServerResponse
 	{
-		val file = File(folder.path)
+		val path = folder.path
 
-		if (!file.exists()) return notFound().buildAndAwait()
+		if (!storageFolderService.exists(path)) return notFound().buildAndAwait()
 
-		val deleted = storageFolderService.delete(file)
+		val deleted = storageFolderService.delete(path)
 
 		return if (deleted)
 			ok().buildAndAwait()
@@ -206,24 +206,24 @@ class FolderHandlerHelper(private val storageFolderService: StorageFolderService
 	/**
 	 * Rename folder
 	 *
-	 * @param folderModel	[Folder] model
+	 * @param folder		[Folder] model
 	 * @param newName		new folder name
 	 * @return [Folder] with updated name
 	 * */
-	suspend fun rename(folderModel: Folder, newName: String): ServerResponse
+	suspend fun rename(folder: Folder, newName: String): ServerResponse
 	{
-		val folder = File(folderModel.path)
+		val path = folder.path
+		// check if folder exists
+		if (!storageFolderService.exists(path)) return notFound().buildAndAwait()
 
-		if (!folder.exists()) return notFound().buildAndAwait()
+		val newPath	= "${File(folder.path).parent}/${newName}"
 
-		val newPath = "${folder.parent}/${newName}"
-
-		val renamedFile = storageFolderService.move(folder, newPath)
+		val renamedFile = storageFolderService.move(path, newPath)
 
 		return if (renamedFile != null)
-			ok().bodyValueAndAwait(folderModel.apply {
-				name = newName
-				path = newPath
+			ok().bodyValueAndAwait(folder.apply {
+				this.name = newName
+				this.path = newPath
 			})
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
@@ -233,28 +233,32 @@ class FolderHandlerHelper(private val storageFolderService: StorageFolderService
 	 * Move operation of the folder, will check if folder and target
 	 * directory are valid, well execute move operation
 	 *
-	 * @param folderModel			folder for move
-	 * @param targetFolderModel		directory where to move folder
-	 * @param move					move operation
+	 * @param folder			folder for move
+	 * @param targetFolder		directory where to move folder
+	 * @param move				move operation
 	 * @return [Folder] with updated path or error code
 	 * */
 	private suspend fun moveFolderAndNewPath(
-		folderModel: Folder,
-		targetFolderModel: Folder,
-		move : suspend (folder: File, newPath: String) -> File?
+		folder			: Folder,
+		targetFolder	: Folder,
+		move 			: suspend (path: String, newPath: String) -> File?
 	): ServerResponse
 	{
-		val folder = File(folderModel.path)
-		val targetFolder = File(targetFolderModel.path)
+		val folderPath 			= folder.path
+		val targetFolderPath 	= targetFolder.path
+
 		// return 404 if folder or target directory does not exist
-		if (!folder.exists() || !targetFolder.exists()) return notFound().buildAndAwait()
+		if (!storageFolderService.exists(folderPath)
+			||
+			!storageFolderService.exists(targetFolderPath)
+		) return notFound().buildAndAwait()
 
-		val newPath = "${targetFolder.path}/${folder.name}"
+		val newPath = "${targetFolderPath}/${folder.name}"
 
-		val movedFile = move(folder, newPath)
+		val movedFile = move(folderPath, newPath)
 
 		return if (movedFile != null)
-			ok().bodyValueAndAwait(folderModel.apply { path = newPath })
+			ok().bodyValueAndAwait(folder.apply { path = newPath })
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
 	}
