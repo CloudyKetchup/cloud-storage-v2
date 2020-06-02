@@ -1,12 +1,12 @@
 package com.krypton.storageservice.service.storage.folder
 
-import com.krypton.storageservice.service.storage.IStorageService
+import com.krypton.storageservice.config.Storage
 import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import reactor.core.publisher.onErrorReturn
-import reactor.kotlin.core.publisher.onErrorReturn
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -15,23 +15,41 @@ import java.nio.file.Path
  * Service for managing storage state for folders only
  * */
 @Service
-class StorageFolderService : IStorageService
+class StorageFolderService @Autowired constructor(storage: Storage) : IStorageFolderService
 {
-	override suspend fun delete(entity: File): Boolean = try
+	private val homeDir = storage.homeDir
+
+	override suspend fun createFolder(path: String): File?
 	{
-		entity.deleteRecursively()
+		val file = File("${homeDir}/$path")
+
+		file.mkdir()
+
+		return if (file.exists()) file else null
+	}
+
+	override suspend fun delete(path: String): Boolean = try
+	{
+		val folder = File("${homeDir}/$path")
+
+		if (!folder.exists()) throw FileNotFoundException()
+
+		folder.deleteRecursively()
 	} catch (e : IOException)
 	{
 		false
 	}
 
-	override suspend fun move(entity: File, newPath: String): File? = try
+	override suspend fun move(path: String, newPath: String): File? = try
 	{
-		val file = File(newPath)
+		val oldFolder 	= File("${homeDir}/$path")
+		val folder		= File("${homeDir}/$newPath")
 
-		if (file.exists()) throw IOException("Folder already exists")
+		if (!oldFolder.exists()) throw FileNotFoundException()
+		// check if new folder already exist
+		if (folder.exists()) throw IOException()
 
-		val movedFile = Mono.fromCallable { Files.move(entity.toPath(), Path.of(newPath)) }
+		val movedFile = Mono.fromCallable { Files.move(oldFolder.toPath(), Path.of(folder.path)) }
 			.awaitSingle()
 			.toFile()
 
@@ -47,27 +65,21 @@ class StorageFolderService : IStorageService
 		null
 	}
 
-	override suspend fun copy(entity: File, newPath: String): File? = try
+	override suspend fun copy(path: String, newPath: String): File? = try
 	{
-		val file = File(newPath)
+		val folder 	= File("${homeDir}/$path")
+		val copy 	= File("${homeDir}/$newPath")
 
-		if (file.exists()) throw IOException("Folder already exists")
+		if (copy.exists()) throw IOException("Folder already exists")
 
-		if (entity.copyRecursively(file, true))
+		if (folder.copyRecursively(copy, true))
 		{
-			file
+			copy
 		} else null
 	} catch (e : IOException)
 	{
 		null
 	}
 
-	suspend fun createFolder(path: String, name: String): File?
-	{
-		val file = File("$path/$name")
-
-		file.mkdir()
-
-		return if (file.exists()) file else null
-	}
+	override suspend fun exists(path: String): Boolean = File("${homeDir}/$path").exists()
 }
