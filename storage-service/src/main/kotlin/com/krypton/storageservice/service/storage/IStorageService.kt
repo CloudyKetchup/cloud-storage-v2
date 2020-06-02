@@ -7,9 +7,11 @@ import java.io.File
  * */
 interface IStorageService
 {
-	suspend fun delete(entity: File) : Boolean
+	suspend fun delete(path: String) : Boolean
 
-	suspend fun move(entity: File, newPath: String) : File?
+	suspend fun move(path: String, newPath: String) : File?
 
-	suspend fun copy(entity: File, newPath: String) : File?
+	suspend fun copy(path: String, newPath: String) : File?
+
+	suspend fun exists(path: String): Boolean
 }
