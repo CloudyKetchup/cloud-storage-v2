@@ -1,8 +1,9 @@
 package com.krypton.storageservice.service.storage.file
 
-import com.krypton.storageservice.service.storage.IStorageService
+import com.krypton.storageservice.config.Storage
 import com.krypton.storageservice.service.storage.folder.StorageFolderService
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
 import java.io.File
@@ -14,43 +15,53 @@ import java.io.IOException
  * For folders use [StorageFolderService]
  * */
 @Service
-class StorageFileService : IStorageService
+class StorageFileService @Autowired constructor(storage: Storage): IStorageFileService
 {
-	override suspend fun delete(entity: File): Boolean
+	private val homeDir = storage.homeDir
+
+	override suspend fun saveFromFilePart(filePart: FilePart, path: String): File?
 	{
-		return entity.delete()
+		val file = File("${homeDir}/$path")
+
+		filePart.transferTo(file).awaitFirstOrNull()
+
+		return if (file.exists()) file else null
 	}
 
-	override suspend fun move(entity: File, newPath: String): File? = try
+	override suspend fun delete(path: String): Boolean
 	{
-		val file = File(newPath)
+		val file = File("${homeDir}/$path")
 
-		if (file.exists()) throw IOException("File already exists")
+		return file.delete()
+	}
 
-		if (entity.renameTo(file))
+	override suspend fun move(path: String, newPath: String): File? = try
+	{
+		val file 	= File("${homeDir}/$path")
+		val newFile = File("${homeDir}/$newPath")
+
+		if (newFile.exists()) throw IOException("File already exists")
+
+		if (file.renameTo(newFile))
 		{
-			file
+			newFile
 		} else null
 	} catch (e : IOException)
 	{
 		null
 	}
 
-	override suspend fun copy(entity: File, newPath: String): File?
+	override suspend fun copy(path: String, newPath: String): File?
 	{
-		val file = File(newPath)
+		val file = File("${homeDir}/$path")
+		val copy = File("${homeDir}/$newPath")
 
-		if (file.exists()) throw IOException("File already exists")
+		if (copy.exists()) throw IOException("File already exists")
 
-		val success = entity.copyRecursively(file, true)
+		val success = file.copyRecursively(copy, true)
 
-		return if (success) file else null
+		return if (success) copy else null
 	}
 
-	suspend fun saveFromFilePart(filePart: FilePart, file: File): File?
-	{
-		filePart.transferTo(file).awaitFirstOrNull()
-
-		return if (file.exists()) file else null
-	}
+	override suspend fun exists(path: String): Boolean = File("${homeDir}/$path").exists()
 }
