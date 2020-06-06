@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 
@@ -19,17 +21,16 @@ class FileStorageClient @Autowired constructor(private val storageClient: WebCli
 {
 	private val uri = "/file"
 
-	override suspend fun upload(formData: LinkedHashMap<String, Any>): WebClientBodyResponse<FileUploadResponse>
+	override suspend fun upload(
+		file: FilePart,
+		path: String
+	): WebClientBodyResponse<FileUploadResponse>
 	{
-		if (!formData.containsKey("path") || !formData.containsKey("file"))
-			return WebClientBodyResponse(HttpStatus.BAD_REQUEST.value())
-
 		return try
 		{
 			storageClient.post()
-				.uri("$uri/upload")
-				.contentType(MediaType.MULTIPART_FORM_DATA)
-				.bodyValue(formData)
+				.uri("$uri/upload?path=${path}")
+				.body(BodyInserters.fromMultipartData("file", file))
 				.retrieve()
 				.bodyToMono(FileUploadResponse::class.java)
 				.map { WebClientBodyResponse(200, it) }
@@ -39,7 +40,7 @@ class FileStorageClient @Autowired constructor(private val storageClient: WebCli
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 
@@ -83,7 +84,7 @@ class FileStorageClient @Autowired constructor(private val storageClient: WebCli
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 
@@ -103,7 +104,7 @@ class FileStorageClient @Autowired constructor(private val storageClient: WebCli
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 }

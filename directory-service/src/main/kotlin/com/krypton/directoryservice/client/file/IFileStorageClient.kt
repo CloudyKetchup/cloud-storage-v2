@@ -8,5 +8,8 @@ import org.springframework.http.codec.multipart.FilePart
 
 interface IFileStorageClient : IStorageClient<File>
 {
-	suspend fun upload(formData: LinkedHashMap<String, Any>): WebClientBodyResponse<FileUploadResponse>
+	suspend fun upload(
+		file: FilePart,
+		path: String
+	): WebClientBodyResponse<FileUploadResponse>
 }
