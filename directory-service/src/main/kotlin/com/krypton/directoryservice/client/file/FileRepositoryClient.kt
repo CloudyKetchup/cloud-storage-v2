@@ -31,7 +31,7 @@ class FileRepositoryClient @Autowired constructor(private val repositoryClient: 
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 
@@ -71,7 +71,7 @@ class FileRepositoryClient @Autowired constructor(private val repositoryClient: 
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 
@@ -90,7 +90,7 @@ class FileRepositoryClient @Autowired constructor(private val repositoryClient: 
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 }
