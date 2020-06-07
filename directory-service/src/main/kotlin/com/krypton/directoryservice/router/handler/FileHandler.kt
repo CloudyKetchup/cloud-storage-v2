@@ -2,6 +2,7 @@ package com.krypton.directoryservice.router.handler
 
 import com.krypton.directoryservice.client.file.IFileRepositoryClient
 import com.krypton.directoryservice.client.file.IFileStorageClient
+import com.krypton.directoryservice.client.folder.IFolderRepositoryClient
 import com.krypton.directoryservice.model.FileMoveData
 import com.krypton.directoryservice.model.FileUploadResponse
 import common.models.File
@@ -21,13 +22,12 @@ class FileHandler @Autowired constructor(private val helper: FileHandlerHelper)
 	{
 		val multipart 	= request.awaitMultipartData()
 		val folderId 	= request.queryParam("folderId")
-		val path 		= request.queryParam("path")
 
-		return if (multipart.containsKey("file") && folderId.isPresent && path.isPresent)
+		return if (multipart.containsKey("file") && folderId.isPresent)
 		{
 			val map = multipart.toSingleValueMap()
 
-			helper.save(map["file"] as FilePart, folderId.get(), path.get())
+			helper.save(map["file"] as FilePart, folderId.get())
 		} else
 		{
 			badRequest().buildAndAwait()
@@ -76,13 +76,17 @@ class FileHandler @Autowired constructor(private val helper: FileHandlerHelper)
 @Component
 class FileHandlerHelper @Autowired constructor(
 	private val repository: IFileRepositoryClient,
+	private val folderRepository: IFolderRepositoryClient,
 	private val storage: IFileStorageClient
 )
 {
-	suspend fun save(file: FilePart, folderId: String, path: String): ServerResponse
+	suspend fun save(file: FilePart, folderId: String): ServerResponse
 	{
+		val folder = folderRepository.find(folderId).body
+			?: return status(HttpStatus.NOT_FOUND).bodyValueAndAwait("Folder not found")
+
 		// save file to storage
-		val storageResponse = storage.upload(file, path)
+		val storageResponse = storage.upload(file, folder.path)
 		// check if file saved to storage
 		if (storageResponse.body == null)
 			return status(HttpStatus.valueOf(storageResponse.status)).buildAndAwait()
@@ -113,7 +117,9 @@ class FileHandlerHelper @Autowired constructor(
 		if (storageResponse.body == null)
 			return status(HttpStatus.valueOf(storageResponse.status)).buildAndAwait()
 
-		val repositoryResponse = repository.save(storageResponse.body)
+		val repositoryResponse = repository.save(storageResponse.body.apply {
+			folder = moveData.folder.id
+		})
 
 		return if (repositoryResponse.body == null)
 			status(HttpStatus.valueOf(repositoryResponse.status)).buildAndAwait()
@@ -129,7 +135,8 @@ class FileHandlerHelper @Autowired constructor(
 			return status(HttpStatus.valueOf(storageResponse.status)).buildAndAwait()
 
 		val repositoryResponse = repository.save(storageResponse.body.apply {
-			id = UUID.randomUUID().toString()
+			id 		= UUID.randomUUID().toString()
+			folder 	= moveData.folder.id
 		})
 
 		return if (repositoryResponse.body == null)
