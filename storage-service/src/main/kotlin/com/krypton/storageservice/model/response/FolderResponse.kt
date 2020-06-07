@@ -1,6 +1,6 @@
 package com.krypton.storageservice.model.response
 
-data class FolderCreateResponse(
+data class FolderResponse(
 	val name : String,
 	val path : String,
 	val size : Long
