@@ -1,10 +1,11 @@
 package com.krypton.storageservice.router
 
 import com.krypton.storageservice.model.FolderMoveData
-import com.krypton.storageservice.model.response.FolderCreateResponse
+import com.krypton.storageservice.model.response.FolderResponse
 import com.krypton.storageservice.service.storage.folder.IStorageFolderService
 import common.models.Folder
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -24,6 +25,10 @@ class FolderRouter @Autowired constructor(handler: FolderHandler)
 			PUT("/move", handler::move)
 			PUT("/copy", handler::copy)
 			PUT("/rename", handler::rename)
+			"/root".nest {
+				GET("/find", handler::findRoot)
+				POST("/create", handler::createRoot)
+			}
 		}
 	}
 }
@@ -35,13 +40,16 @@ class FolderRouter @Autowired constructor(handler: FolderHandler)
  * and filters invalid requests
  * */
 @Component
-class FolderHandler @Autowired constructor(private val helper: FolderHandlerHelper)
+class FolderHandler @Autowired constructor(
+	private val helper: FolderHandlerHelper,
+	private val storageFolderService: IStorageFolderService
+)
 {
 	/**
 	 * Creates a new folder in storage on specified path
 	 *
 	 * @param request	incoming request with [Folder] body and "name" query param
-	 * @return response with newly created folder data -> [FolderCreateResponse]
+	 * @return response with newly created folder data -> [FolderResponse]
 	 * */
 	suspend fun create(request: ServerRequest): ServerResponse
 	{
@@ -49,7 +57,7 @@ class FolderHandler @Autowired constructor(private val helper: FolderHandlerHelp
 		val name			= request.queryParam("name")
 
 		return if (parentFolder != null && name.isPresent)
-			helper.create(parentFolder, name.get())
+			helper.create(parentFolder.path, name.get())
 		else
 			badRequest().buildAndAwait()
 	}
@@ -128,6 +136,26 @@ class FolderHandler @Autowired constructor(private val helper: FolderHandlerHelp
 		else
 			badRequest().buildAndAwait()
 	}
+
+	suspend fun findRoot(request: ServerRequest): ServerResponse
+	{
+		return if (storageFolderService.exists("/root"))
+			ok().bodyValueAndAwait(FolderResponse(
+				name = "root",
+				path = "/root",
+				size = 64
+			))
+		else
+			notFound().buildAndAwait()
+	}
+
+	suspend fun createRoot(request: ServerRequest): ServerResponse
+	{
+		return if (!storageFolderService.exists("/root"))
+			helper.create("", "root")
+		else
+			status(HttpStatus.FOUND).bodyValueAndAwait("Root folder already exists")
+	}
 }
 
 /**
@@ -140,13 +168,13 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 	/**
 	 * Create new folder
 	 *
-	 * @param parentFolder	directory where to create new folder
+	 * @param parentPath	directory where to create new folder
 	 * @param name			new folder name
-	 * @return [FolderCreateResponse] or internal server error status
+	 * @return [FolderResponse] or internal server error status
 	 * */
-	suspend fun create(parentFolder: Folder, name: String): ServerResponse
+	suspend fun create(parentPath: String, name: String): ServerResponse
 	{
-		val path 		= "${parentFolder.path}/$name"	// path from parent folder
+		val path = "${parentPath}/$name"
 		// check if folder already exists
 		if (storageFolderService.exists(path))
 			return status(INTERNAL_SERVER_ERROR).bodyValueAndAwait("Folder already exist")
@@ -154,7 +182,7 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 		val folder = storageFolderService.createFolder(path)
 
 		return if (folder != null)
-			ok().bodyValueAndAwait(FolderCreateResponse(folder.name, path, folder.length()))
+			ok().bodyValueAndAwait(FolderResponse(folder.name, path, folder.length()))
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
 	}
