@@ -1,8 +1,8 @@
 package com.krypton.directoryservice.client.folder
 
 import com.krypton.directoryservice.client.WebClientBodyResponse
-import com.krypton.directoryservice.model.FileMoveData
-import com.krypton.directoryservice.model.FolderCreateResponse
+import com.krypton.directoryservice.model.FolderResponse
+import com.krypton.directoryservice.model.FolderMoveData
 import common.models.Folder
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +17,7 @@ class FolderStorageClient @Autowired constructor(private val storageClient: WebC
 {
 	private val uri = "/folder"
 
-	override suspend fun create(parentFolder: Folder, name: String): WebClientBodyResponse<FolderCreateResponse>
+	override suspend fun create(parentFolder: Folder, name: String): WebClientBodyResponse<FolderResponse>
 	{
 		return try
 		{
@@ -25,7 +25,7 @@ class FolderStorageClient @Autowired constructor(private val storageClient: WebC
 				.uri("$uri/create?name=${name}")
 				.bodyValue(parentFolder)
 				.retrieve()
-				.bodyToMono(FolderCreateResponse::class.java)
+				.bodyToMono(FolderResponse::class.java)
 				.map { WebClientBodyResponse(200, it) }
 				.awaitSingle()
 		} catch (e: WebClientResponseException)
@@ -57,9 +57,9 @@ class FolderStorageClient @Autowired constructor(private val storageClient: WebC
 		}
 	}
 
-	override suspend fun move(moveData: FileMoveData) = moveRequest(moveData, "$uri/move")
+	override suspend fun move(moveData: FolderMoveData) = moveRequest(moveData, "$uri/move")
 
-	override suspend fun copy(moveData: FileMoveData) = moveRequest(moveData, "$uri/copy")
+	override suspend fun copy(moveData: FolderMoveData) = moveRequest(moveData, "$uri/copy")
 
 	override suspend fun rename(body: Folder, name: String): WebClientBodyResponse<Folder>
 	{
@@ -81,7 +81,7 @@ class FolderStorageClient @Autowired constructor(private val storageClient: WebC
 		}
 	}
 
-	private suspend fun moveRequest(moveData: FileMoveData, uri: String): WebClientBodyResponse<Folder>
+	private suspend fun moveRequest(moveData: FolderMoveData, uri: String): WebClientBodyResponse<Folder>
 	{
 		return try
 		{
