@@ -7,7 +7,7 @@ data class File(
 	var name        : String,
 	var path        : String,
 	var folder      : String,  // folder id
-	val size        : Int,
-	val dateCreated : String,
+	var size        : Int,
+	var dateCreated : String,
 	var extension   : String
 )
