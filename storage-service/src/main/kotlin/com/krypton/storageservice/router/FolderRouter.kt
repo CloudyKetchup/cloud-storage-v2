@@ -1,7 +1,9 @@
 package com.krypton.storageservice.router
 
+import com.krypton.storageservice.model.Directory
 import com.krypton.storageservice.model.FolderMoveData
 import com.krypton.storageservice.model.response.FolderResponse
+import com.krypton.storageservice.service.storage.folder.IFolderDataService
 import com.krypton.storageservice.service.storage.folder.IStorageFolderService
 import common.models.Folder
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.reactive.function.server.ServerResponse.*
 import java.io.File
+import kotlin.streams.toList
 
 /**
  * Router for handling requests related to folders storage management
@@ -25,6 +28,7 @@ class FolderRouter @Autowired constructor(handler: FolderHandler)
 			PUT("/move", handler::move)
 			PUT("/copy", handler::copy)
 			PUT("/rename", handler::rename)
+			GET("/tree", handler::getTree)
 			"/root".nest {
 				GET("/find", handler::findRoot)
 				POST("/create", handler::createRoot)
@@ -156,6 +160,16 @@ class FolderHandler @Autowired constructor(
 		else
 			status(HttpStatus.FOUND).bodyValueAndAwait("Root folder already exists")
 	}
+
+	suspend fun getTree(request: ServerRequest): ServerResponse
+	{
+		val folder = request.awaitBodyOrNull<Folder>()
+
+		return if (folder != null)
+			helper.getTree(folder)
+		else
+			badRequest().buildAndAwait()
+	}
 }
 
 /**
@@ -163,7 +177,10 @@ class FolderHandler @Autowired constructor(
  * to get and validate the data, and helper will execute all the operations
  * */
 @Component
-class FolderHandlerHelper @Autowired constructor(private val storageFolderService: IStorageFolderService)
+class FolderHandlerHelper @Autowired constructor(
+	private val storageService: IStorageFolderService,
+	private val dataService: IFolderDataService
+)
 {
 	/**
 	 * Create new folder
@@ -176,10 +193,10 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 	{
 		val path = "${parentPath}/$name"
 		// check if folder already exists
-		if (storageFolderService.exists(path))
+		if (storageService.exists(path))
 			return status(INTERNAL_SERVER_ERROR).bodyValueAndAwait("Folder already exist")
 
-		val folder = storageFolderService.createFolder(path)
+		val folder = storageService.createFolder(path)
 
 		return if (folder != null)
 			ok().bodyValueAndAwait(FolderResponse(folder.name, path, folder.length()))
@@ -197,9 +214,9 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 	{
 		val path = folder.path
 
-		if (!storageFolderService.exists(path)) return notFound().buildAndAwait()
+		if (!storageService.exists(path)) return notFound().buildAndAwait()
 
-		val deleted = storageFolderService.delete(path)
+		val deleted = storageService.delete(path)
 
 		return if (deleted)
 			ok().buildAndAwait()
@@ -216,7 +233,7 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 	 * */
 	suspend fun move(folder: Folder, targetFolder: Folder): ServerResponse
 	{
-		return moveFolderAndNewPath(folder, targetFolder, storageFolderService::move)
+		return moveFolderAndNewPath(folder, targetFolder, storageService::move)
 	}
 
 	/**
@@ -228,7 +245,7 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 	 * */
 	suspend fun copy(folder: Folder, targetFolder: Folder): ServerResponse
 	{
-		return moveFolderAndNewPath(folder, targetFolder, storageFolderService::copy)
+		return moveFolderAndNewPath(folder, targetFolder, storageService::copy)
 	}
 
 	/**
@@ -242,11 +259,11 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 	{
 		val path = folder.path
 		// check if folder exists
-		if (!storageFolderService.exists(path)) return notFound().buildAndAwait()
+		if (!storageService.exists(path)) return notFound().buildAndAwait()
 
 		val newPath	= "${File(folder.path).parent}/${newName}"
 
-		val renamedFile = storageFolderService.move(path, newPath)
+		val renamedFile = storageService.move(path, newPath)
 
 		return if (renamedFile != null)
 			ok().bodyValueAndAwait(folder.apply {
@@ -255,6 +272,35 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 			})
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
+	}
+
+	suspend fun getTree(folder: Folder): ServerResponse
+	{
+		val data = dataService.getData(folder.path)
+			?: return notFound().buildAndAwait()
+
+		val directory = Directory(data, arrayListOf(), arrayListOf())
+
+		populateDirectory(directory)
+
+		return ok().bodyValueAndAwait(directory)
+	}
+
+	private fun populateDirectory(directory: Directory)
+	{
+		// add all files
+		dataService.getFiles(directory.data.path)?.let {
+			directory.files.addAll(it)
+		}
+		// add all folders
+		dataService.getFolders(directory.data.path)?.let {
+			val folders = it.parallelStream()
+				.map { folder -> Directory(folder, arrayListOf(), arrayListOf()) }
+				.toList()
+			directory.folders.addAll(folders)
+		}
+		// run same population for all folders inside
+		directory.folders.parallelStream().forEach { populateDirectory(it) }
 	}
 
 	/**
@@ -276,9 +322,9 @@ class FolderHandlerHelper @Autowired constructor(private val storageFolderServic
 		val targetFolderPath 	= targetFolder.path
 
 		// return 404 if folder or target directory does not exist
-		if (!storageFolderService.exists(folderPath)
+		if (!storageService.exists(folderPath)
 			||
-			!storageFolderService.exists(targetFolderPath)
+			!storageService.exists(targetFolderPath)
 		) return notFound().buildAndAwait()
 
 		val newPath = "${targetFolderPath}/${folder.name}"
