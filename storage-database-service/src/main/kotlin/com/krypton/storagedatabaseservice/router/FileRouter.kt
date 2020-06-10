@@ -10,7 +10,10 @@ class FileRouter @Autowired constructor(private val handler: FileHandler)
 {
 	val router = coRouter {
 		"/file".nest {
-			POST("/save", handler::save)
+			"/save".nest {
+				POST("/", handler::save)
+				POST("/all", handler::saveAll)
+			}
 			DELETE("/delete", handler::delete)
 			GET("/all", handler::all)
 			GET("/find", handler::find)

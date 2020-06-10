@@ -10,7 +10,10 @@ class FolderRouter @Autowired constructor(private val handler: FolderHandler)
 {
 	val router = coRouter {
 		"/folder".nest {
-			POST("/save", handler::save)
+			"/save".nest {
+				POST("/", handler::save)
+				POST("/all", handler::saveAll)
+			}
 			PUT("/update", handler::update)
 			DELETE("/delete", handler::delete)
 			GET("/root") { handler.root() }
