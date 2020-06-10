@@ -1,14 +1,17 @@
 package com.krypton.directoryservice.client.folder
 
 import com.krypton.directoryservice.client.WebClientBodyResponse
+import common.models.File
 import common.models.Folder
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactive.collect
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import kotlin.streams.toList
 
 @Service
 class FolderRepositoryClient @Autowired constructor(private val repositoryClient: WebClient): IFolderRepositoryClient
@@ -33,7 +36,27 @@ class FolderRepositoryClient @Autowired constructor(private val repositoryClient
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
+		}
+	}
+
+	override suspend fun saveAll(body: List<Folder>): WebClientBodyResponse<ArrayList<Folder>>
+	{
+		return try
+		{
+			repositoryClient.post()
+				.uri("$uri/save/all")
+				.bodyValue(body)
+				.retrieve()
+				.bodyToMono(arrayListOf<Folder>().javaClass)
+				.map { WebClientBodyResponse(200, it) }
+				.awaitSingle()
+		} catch (e: WebClientResponseException)
+		{
+			WebClientBodyResponse(e.rawStatusCode)
+		} catch (e: Exception)
+		{
+			WebClientBodyResponse(500)
 		}
 	}
 
@@ -53,7 +76,7 @@ class FolderRepositoryClient @Autowired constructor(private val repositoryClient
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 
@@ -91,7 +114,7 @@ class FolderRepositoryClient @Autowired constructor(private val repositoryClient
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 
@@ -111,7 +134,7 @@ class FolderRepositoryClient @Autowired constructor(private val repositoryClient
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 
@@ -130,7 +153,7 @@ class FolderRepositoryClient @Autowired constructor(private val repositoryClient
 			WebClientBodyResponse(e.rawStatusCode)
 		} catch (e: Exception)
 		{
-			WebClientBodyResponse(505)
+			WebClientBodyResponse(500)
 		}
 	}
 }

@@ -35,6 +35,23 @@ class FileRepositoryClient @Autowired constructor(private val repositoryClient: 
 		}
 	}
 
+	override suspend fun saveAll(body: List<File>): WebClientBodyResponse<ArrayList<File>>
+	{
+		return try {
+			repositoryClient.post()
+				.uri("$uri/save/all")
+				.bodyValue(body)
+				.retrieve()
+				.bodyToMono(arrayListOf<File>().javaClass)
+				.map { WebClientBodyResponse(200, it) }
+				.awaitSingle()
+		} catch (e: WebClientResponseException) {
+			WebClientBodyResponse(e.rawStatusCode)
+		} catch (e: Exception) {
+			WebClientBodyResponse(500)
+		}
+	}
+
 	override suspend fun delete(id: String): HttpStatus
 	{
 		return try
