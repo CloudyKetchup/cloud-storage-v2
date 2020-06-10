@@ -33,6 +33,16 @@ class FileHandler @Autowired constructor(private val helper: FileHandlerHelper)
 			badRequest().buildAndAwait()
 	}
 
+	suspend fun saveAll(request: ServerRequest): ServerResponse
+	{
+		val files = request.awaitBodyOrNull<List<File>>()
+
+		return if (files != null)
+			helper.saveAll(files)
+		else
+			badRequest().buildAndAwait()
+	}
+
 	/**
 	 * Delete file from repository
 	 *
@@ -120,6 +130,11 @@ class FileHandlerHelper @Autowired constructor(private val fileService: IFileSer
 			ok().bodyValueAndAwait(savedFile)
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
+	}
+
+	suspend fun saveAll(files: List<File>): ServerResponse
+	{
+		return ok().bodyValueAndAwait(fileService.saveAll(files))
 	}
 
 	/**

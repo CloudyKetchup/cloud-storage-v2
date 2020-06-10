@@ -40,6 +40,11 @@ class FileService @Autowired constructor(private val repository: FileRepository)
 			update(entity)
 	}
 
+	override suspend fun saveAll(entities: List<File>): List<File>
+	{
+		return repository.saveAll(entities).collectList().awaitSingle()
+	}
+
 	override suspend fun delete(e: File): Boolean
 	{
 		repository.delete(e).awaitFirstOrNull()

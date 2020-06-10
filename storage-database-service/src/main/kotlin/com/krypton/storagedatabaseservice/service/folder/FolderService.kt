@@ -32,6 +32,11 @@ class FolderService @Autowired constructor(private val repository: FolderReposit
 			saveNew(entity)
 	}
 
+	override suspend fun saveAll(entities: List<Folder>): List<Folder>
+	{
+		return repository.saveAll(entities).collectList().awaitSingle()
+	}
+
 	override suspend fun findById(id: String): Folder? = repository.findById(id).awaitFirstOrNull()
 
 	override suspend fun delete(e: Folder): Boolean

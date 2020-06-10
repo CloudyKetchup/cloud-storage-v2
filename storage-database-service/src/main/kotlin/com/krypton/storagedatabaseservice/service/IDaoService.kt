@@ -6,6 +6,8 @@ interface IDaoService<E, ID>
 {
 	suspend fun save(entity: E): E?
 
+	suspend fun saveAll(entities: List<E>): List<E>
+
 	suspend fun findById(id: ID): E?
 
 	suspend fun all(): Flow<E>

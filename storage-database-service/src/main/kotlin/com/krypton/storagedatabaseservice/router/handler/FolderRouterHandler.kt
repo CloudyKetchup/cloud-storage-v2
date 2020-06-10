@@ -51,6 +51,16 @@ class FolderHandler @Autowired constructor(
 			badRequest().buildAndAwait()
 	}
 
+	suspend fun saveAll(request: ServerRequest): ServerResponse
+	{
+		val folders = request.awaitBodyOrNull<List<Folder>>()
+
+		return if (folders != null)
+			helper.saveAll(folders)
+		else
+			badRequest().buildAndAwait()
+	}
+
 	/**
 	 * Update folder entity
 	 *
@@ -143,6 +153,11 @@ class FolderHandlerHelper @Autowired constructor(
 			else
 				status(INTERNAL_SERVER_ERROR).buildAndAwait()
 		}
+	}
+
+	suspend fun saveAll(folders: List<Folder>): ServerResponse
+	{
+		return ok().bodyValueAndAwait(folderService.saveAll(folders))
 	}
 
 	/**
