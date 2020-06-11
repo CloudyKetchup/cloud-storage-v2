@@ -9,6 +9,8 @@ interface IFolderRepositoryClient : IRepositoryClient<Folder>
 {
 	suspend fun update(folder: Folder): WebClientBodyResponse<Folder>
 
+	suspend fun updateChildPaths(id: String): HttpStatus
+
 	suspend fun delete(id: String, recursively: Boolean? = false): HttpStatus
 
 	suspend fun root(): WebClientBodyResponse<Folder>

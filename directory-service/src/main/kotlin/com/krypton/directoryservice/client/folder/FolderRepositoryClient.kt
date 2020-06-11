@@ -80,6 +80,25 @@ class FolderRepositoryClient @Autowired constructor(private val repositoryClient
 		}
 	}
 
+	override suspend fun updateChildPaths(id: String): HttpStatus
+	{
+		return try
+		{
+			repositoryClient.put()
+				.uri("$uri/update/child-paths?id=${id}")
+				.retrieve()
+				.toBodilessEntity()
+				.map { it.statusCode }
+				.awaitSingle()
+		} catch (e: WebClientResponseException)
+		{
+			e.statusCode
+		} catch (e: Exception)
+		{
+			HttpStatus.INTERNAL_SERVER_ERROR
+		}
+	}
+
 	override suspend fun delete(id: String, recursively: Boolean?): HttpStatus
 	{
 		return try
