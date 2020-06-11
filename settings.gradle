@@ -1,6 +1,7 @@
 rootProject.name="cloud-storage-v2"
 
 include ":eureka-server",
+        ":gateway",
         ":storage-database-service",
         ":common-models",
         ":directory-service",
