@@ -2,7 +2,13 @@ package com.krypton.storagedatabaseservice.router.handler
 
 import com.krypton.storagedatabaseservice.service.file.IFileService
 import com.krypton.storagedatabaseservice.service.folder.FolderService
+import common.models.File
 import common.models.Folder
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.FOUND
@@ -51,6 +57,12 @@ class FolderHandler @Autowired constructor(
 			badRequest().buildAndAwait()
 	}
 
+	/***
+	 * Save multiple folder to repository
+	 *
+	 * @param request	incoming request with [Folder] list
+	 * @return list of save folders
+	 */
 	suspend fun saveAll(request: ServerRequest): ServerResponse
 	{
 		val folders = request.awaitBodyOrNull<List<Folder>>()
@@ -73,6 +85,22 @@ class FolderHandler @Autowired constructor(
 
 		return if (folder != null)
 			helper.update(folder)
+		else
+			badRequest().buildAndAwait()
+	}
+
+	/**
+	 * Update child path property with parent folder actual
+	 *
+	 * @param request	incoming request with "id" query param
+	 * @return http status, bad request, ok or not found
+	 * */
+	suspend fun updateChildPaths(request: ServerRequest): ServerResponse
+	{
+		val id = request.queryParam("id")
+
+		return if (id.isPresent)
+			helper.updateChildPaths(id.get())
 		else
 			badRequest().buildAndAwait()
 	}
@@ -119,6 +147,16 @@ class FolderHandler @Autowired constructor(
 		else
 			badRequest().buildAndAwait()
 	}
+
+	suspend fun getTree(request: ServerRequest): ServerResponse
+	{
+		val folder = request.queryParam("id")
+
+		return if (folder.isPresent)
+			helper.getTree(folder.get())
+		else
+			badRequest().buildAndAwait()
+	}
 }
 
 /**
@@ -132,6 +170,12 @@ class FolderHandlerHelper @Autowired constructor(
 	private val fileService: IFileService
 )
 {
+	data class DirectoryTree(
+		val data	: Folder,
+		val folders	: ArrayList<DirectoryTree>,
+		val files	: ArrayList<File>
+	)
+
 	/**
 	 * Save folder to repository
 	 *
@@ -155,6 +199,12 @@ class FolderHandlerHelper @Autowired constructor(
 		}
 	}
 
+	/**
+	 * Save a list of folder to repository
+	 *
+	 * @param folders	folders list
+	 * @return list of saved folder
+	 * */
 	suspend fun saveAll(folders: List<Folder>): ServerResponse
 	{
 		return ok().bodyValueAndAwait(folderService.saveAll(folders))
@@ -174,6 +224,25 @@ class FolderHandlerHelper @Autowired constructor(
 			ok().bodyValueAndAwait(savedFolder)
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
+	}
+
+	/**
+	 * Update all children nodes path with parent folder actual
+	 *
+	 * @param id	folder id
+	 * @return status ok or notFound if folder not found in repo
+	 * */
+	suspend fun updateChildPaths(id: String): ServerResponse
+	{
+		val folder = folderService.findById(id)
+
+		if (folder != null)
+		{
+			updateChildNodesPaths(folder)
+
+			return ok().buildAndAwait()
+		}
+		return notFound().buildAndAwait()
 	}
 
 	/**
@@ -223,5 +292,85 @@ class FolderHandlerHelper @Autowired constructor(
 			ok().buildAndAwait()
 		else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
+	}
+
+	/**
+	 * Get directory tree with [Folder]'s and [File]'s
+	 *
+	 * @param id	parent folder id
+	 * @return [DirectoryTree]
+	 * */
+	suspend fun getTree(id: String): ServerResponse
+	{
+		val folder = folderService.findById(id)
+
+		if (folder != null)
+		{
+			return ok().bodyValueAndAwait(getTree(folder))
+		}
+		return notFound().buildAndAwait()
+	}
+
+	/**
+	 * Get directory tree
+	 *
+	 * @param folder	folder from which get tree
+	 * @return [DirectoryTree]
+	 * */
+	private suspend fun getTree(folder: Folder) : DirectoryTree = coroutineScope {
+		val tree = DirectoryTree(folder, arrayListOf(), arrayListOf())
+
+		val populateFiles 	= async { fileService.findByFolder(folder.id).toList(tree.files) }
+		val getFolders 		= async { folderService.findByFolder(folder.id) }
+
+		getFolders.await().map { getTree(it) }.toList(tree.folders)
+		populateFiles.await()
+		return@coroutineScope tree
+	}
+
+	/**
+	 * Update all folder items path with actual folder path
+	 * By default will run recursively for all folders inside as well
+	 *
+	 * @param folder		target folder
+	 * @param recursively	run same process for folders inside
+	 * */
+	private suspend fun updateChildNodesPaths(folder: Folder, recursively: Boolean? = true): Unit = coroutineScope {
+		val updatedFolders 	= async { updateFoldersPath(folder) }
+		val updatedFiles 	= async { updateFilesPath(folder) }
+
+		folderService.saveAll(updatedFolders.await())
+		fileService.saveAll(updatedFiles.await())
+
+		if (recursively == true)
+			updatedFolders.await().asFlow().collect { updateChildNodesPaths(it) }
+	}
+
+	/**
+	 * Update child folders path from a folder
+	 * Will not save to repository, just return an updated list
+	 *
+	 * @param folder	parent folder
+	 * @return updated folders list
+	 * */
+	private suspend fun updateFoldersPath(folder: Folder): List<Folder>
+	{
+		val folders = folderService.findByFolder(folder.id)
+
+		return folders.map { f -> f.apply { path = "${folder.path}/${name}" }}.toList()
+	}
+
+	/**
+	 * Update child files path from a folder
+	 * Will not save to repository, just return an updated list
+	 *
+	 * @param folder	parent folder
+	 * @return updated files list
+	 * */
+	private suspend fun updateFilesPath(folder: Folder): List<File>
+	{
+		val files = fileService.findByFolder(folder.id)
+
+		return files.map { f -> f.apply { path = "${folder.path}/${name}" }}.toList()
 	}
 }
