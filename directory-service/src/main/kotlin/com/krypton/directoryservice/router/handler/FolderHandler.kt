@@ -19,7 +19,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Component
-class FolderHandler @Autowired constructor(private val helper: FolderHandlerHelper)
+class FolderHandler @Autowired constructor(
+	private val helper: FolderHandlerHelper,
+	private val folderRepository: IFolderRepositoryClient
+)
 {
 	/**j
 	 * Create folder in storage and save to repository
@@ -69,6 +72,16 @@ class FolderHandler @Autowired constructor(private val helper: FolderHandlerHelp
 	 * @return response from [moveRequest]
 	 * */
 	suspend fun copy(request: ServerRequest) = moveRequest(request, helper::copy)
+
+	suspend fun root(): ServerResponse
+	{
+		val root = folderRepository.root().body
+
+		return if (root != null)
+			ok().bodyValueAndAwait(root)
+		else
+			notFound().buildAndAwait()
+	}
 
 	/**
 	 * Move operation, main goal is to validate moveData body
