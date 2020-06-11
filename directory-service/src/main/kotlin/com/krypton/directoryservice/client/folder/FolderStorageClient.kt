@@ -1,6 +1,7 @@
 package com.krypton.directoryservice.client.folder
 
 import com.krypton.directoryservice.client.WebClientBodyResponse
+import com.krypton.directoryservice.model.Directory
 import com.krypton.directoryservice.model.FolderResponse
 import com.krypton.directoryservice.model.FolderMoveData
 import common.models.Folder
@@ -98,6 +99,26 @@ class FolderStorageClient @Autowired constructor(private val storageClient: WebC
 		} catch (e: Exception)
 		{
 			WebClientBodyResponse(505)
+		}
+	}
+
+	override suspend fun getTree(folder: Folder): WebClientBodyResponse<Directory>
+	{
+		return try
+		{
+			storageClient.method(HttpMethod.GET)
+				.uri("$uri/tree")
+				.bodyValue(folder)
+				.retrieve()
+				.bodyToMono(Directory::class.java)
+				.map { WebClientBodyResponse(200, it) }
+				.awaitSingle()
+		} catch (e: WebClientResponseException)
+		{
+			WebClientBodyResponse(e.rawStatusCode)
+		} catch (e: Exception)
+		{
+			WebClientBodyResponse(500)
 		}
 	}
 }
