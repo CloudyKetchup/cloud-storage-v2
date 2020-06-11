@@ -14,11 +14,15 @@ class FolderRouter @Autowired constructor(private val handler: FolderHandler)
 				POST("/", handler::save)
 				POST("/all", handler::saveAll)
 			}
-			PUT("/update", handler::update)
+			"/update".nest {
+				PUT("/", handler::update)
+				PUT("/child-paths", handler::updateChildPaths)
+			}
 			DELETE("/delete", handler::delete)
 			GET("/root") { handler.root() }
 			GET("/all", handler::all)
 			GET("/", handler::find)
+			GET("/tree", handler::getTree)
 		}
 	}
 }
