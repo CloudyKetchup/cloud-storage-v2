@@ -1,3 +1,8 @@
+*
+{
+  transition: 0.2s;
+}
+
 body
 {
   margin: 0;
@@ -21,4 +26,13 @@ code
 {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+button,
+input
+{
+  outline: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
