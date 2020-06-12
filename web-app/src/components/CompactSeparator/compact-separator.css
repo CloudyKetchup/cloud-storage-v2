@@ -1,0 +1,11 @@
+.compact-separator
+{
+  width: 100%;
+  height: 1px;
+}
+
+.compact-separator > div
+{
+  height: 100%;
+  width: 20px;
+}
