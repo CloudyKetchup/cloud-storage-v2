@@ -1,0 +1,29 @@
+#upload-button
+{
+  display: flex;
+  padding-left: 20px;
+  padding-right: 30px;
+  line-height: 40px;
+  height: 40px;
+  width: 120px;
+  margin-top: 5px;
+  border-radius: 100px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  -webkit-box-shadow: 0px 5px 10px 3px rgba(0, 0, 0, 0.10);
+  -moz-box-shadow: 0px 5px 10px 3px rgba(0, 0, 0, 0.10);
+  box-shadow: 0px 5px 10px 3px rgba(0, 0, 0 ,0.10);
+}
+
+#uplaod-button:focus,
+#upload-button:hover
+{
+  -webkit-box-shadow: unset;
+  -moz-box-shadow: unset;
+  box-shadow: unset;
+}
+
+#upload-button > div:last-child
+{
+  margin-left: auto;
+}
