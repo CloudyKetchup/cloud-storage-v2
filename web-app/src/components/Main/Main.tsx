@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 
-import { DirectoryProvider }    from "../../context/DirectoryContext";
 import { ThemeContext, Theme }  from "../../context/ThemeContext";
 
 import MainContent from "../MainContent/MainContent";
@@ -25,10 +24,8 @@ const Main = () =>
 
   return (
     <div className="main" style={style}>
-      <DirectoryProvider>
-        {/* NavBar here */}
-        <MainContent />
-      </DirectoryProvider>
+      {/* NavBar here */}
+      <MainContent />
     </div>
   );
 };
