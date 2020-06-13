@@ -4,8 +4,18 @@
   color: white;
 }
 
+.dark svg
+{
+  fill: white;
+}
+
 .light
 {
   background: white;
   color: #202020
+}
+
+.light svg
+{
+  fill: #181818;
 }
