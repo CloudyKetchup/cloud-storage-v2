@@ -1,6 +1,7 @@
 import React from 'react';
 
-import MainLeftPanel from './components/MainLeftPanel/MainLeftPanel';
+import MainLeftPanel  from './components/MainLeftPanel/MainLeftPanel';
+import Main           from './components/Main/Main';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -10,6 +11,7 @@ const App = () => (
   <div className="App">
     <ThemeProvider>
       <MainLeftPanel />
+      <Main/>
     </ThemeProvider>
   </div>
 );
