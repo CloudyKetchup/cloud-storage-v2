@@ -1,6 +1,7 @@
 import { API_URL } from "./env.config";
 
 import { StorageStats } from "../models/StorageStats";
+import { Folder }       from "../models/Directory";
 
 import axios from "axios";
 
@@ -20,7 +21,14 @@ class FolderClient
     return FolderClient.inst;
   }
 
-  getRootStats = (onError?: () => void) : Promise<StorageStats | null> =>
+  getRoot = (onError?: () => void) : Promise<Folder | undefined> =>
+  (
+    axios.get(`${this.URL}/root`)
+      .then(response => response.data)
+      .catch(onError)
+  );
+
+  getRootStats = (onError?: () => void) : Promise<StorageStats | undefined> =>
   (
     axios.get(`${this.URL}/root/stats`)
       .then(response => response.data)
