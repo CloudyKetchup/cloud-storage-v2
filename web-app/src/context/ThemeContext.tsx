@@ -2,7 +2,7 @@ import React, { createContext, FC, useState } from "react";
 
 export enum Theme
 {
-  LIGHT = "FFFFFF",
+  LIGHT = "#FFFFFF",
   DARK  = "#181818"
 };
 
