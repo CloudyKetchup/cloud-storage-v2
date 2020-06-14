@@ -1,4 +1,7 @@
 package com.krypton.directoryservice.model
 
-class RootFolderStats {
-}
+data class FolderUsageStats(
+	val used: Double,
+	val free: Double,
+	val total: Double 
+)

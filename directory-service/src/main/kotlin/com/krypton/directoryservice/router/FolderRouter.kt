@@ -14,7 +14,11 @@ class FolderRouter @Autowired constructor(handler: FolderHandler)
 			DELETE("/delete", handler::delete)
 			PUT("/move", handler::move)
 			PUT("/copy", handler::copy)
-			GET("/root") { handler.root() }
+			GET("/content", handler::directoryItems)
+			"/root".nest {
+				GET("/") { handler.root() }
+				GET("/stats") { handler.rootStats() }
+			}
 		}
 	}
 }
