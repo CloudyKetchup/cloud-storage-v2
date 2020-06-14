@@ -1,6 +1,7 @@
 package com.krypton.storageservice.service.storage.folder
 
 import com.krypton.storageservice.config.Storage
+import com.krypton.storageservice.model.FolderUsageStats
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -82,4 +83,22 @@ class StorageFolderService @Autowired constructor(storage: Storage) : IStorageFo
 	}
 
 	override suspend fun exists(path: String): Boolean = File("${homeDir}/$path").exists()
+
+	override suspend fun rootStats(path: String): FolderUsageStats?
+	{
+		val file = File("$homeDir/$path")
+		val fs	 = File(homeDir)
+
+		return if (file.exists())
+		{
+			val total = String.format("%.2f", fs.totalSpace.toDouble() / 1024 / 1024 / 1024).toDouble()
+			val free = String.format("%.2f", fs.freeSpace.toDouble() / 1024 / 1024 / 1024).toDouble()
+
+			FolderUsageStats(
+				String.format("%.2f", total - free).toDouble(),
+				free,
+				total
+			)
+		} else null
+	}
 }
