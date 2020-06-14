@@ -30,8 +30,9 @@ class FolderRouter @Autowired constructor(handler: FolderHandler)
 			PUT("/rename", handler::rename)
 			GET("/tree", handler::getTree)
 			"/root".nest {
-				GET("/find", handler::findRoot)
-				POST("/create", handler::createRoot)
+				GET("/stats", handler::rootStats)
+				GET("/find") { handler.findRoot() }
+				POST("/create") { handler.createRoot() }
 			}
 		}
 	}
@@ -141,7 +142,12 @@ class FolderHandler @Autowired constructor(
 			badRequest().buildAndAwait()
 	}
 
-	suspend fun findRoot(request: ServerRequest): ServerResponse
+	/**
+	 * Find root folder
+	 * 
+	 * @return [FolderResponse]
+	 */
+	suspend fun findRoot(): ServerResponse
 	{
 		return if (storageFolderService.exists("/root"))
 			ok().bodyValueAndAwait(FolderResponse(
@@ -153,7 +159,12 @@ class FolderHandler @Autowired constructor(
 			notFound().buildAndAwait()
 	}
 
-	suspend fun createRoot(request: ServerRequest): ServerResponse
+	/**
+	 * Creates the root folder in storage if not found
+	 * 
+	 * @return [FolderResponse] body
+	 */
+	suspend fun createRoot(): ServerResponse
 	{
 		return if (!storageFolderService.exists("/root"))
 			helper.create("", "root")
@@ -161,12 +172,34 @@ class FolderHandler @Autowired constructor(
 			status(HttpStatus.FOUND).bodyValueAndAwait("Root folder already exists")
 	}
 
+	/**
+	 * Get directory tree of a folder
+	 * 
+	 * @param request		incoming request with [Folder] body
+	 * @return [Directory] body
+	 */
 	suspend fun getTree(request: ServerRequest): ServerResponse
 	{
 		val folder = request.awaitBodyOrNull<Folder>()
 
 		return if (folder != null)
 			helper.getTree(folder)
+		else
+			badRequest().buildAndAwait()
+	}
+
+	/**
+	 * Get memory usage of the root folder
+	 * 
+	 * @param request		incoming request with root path
+	 * @return [FolderUsageStats] body
+	 */
+	suspend fun rootStats(request: ServerRequest): ServerResponse
+	{
+		val path = request.queryParam("path")
+
+		return if (path.isPresent)
+			helper.rootStats(path.get())
 		else
 			badRequest().buildAndAwait()
 	}
@@ -274,6 +307,13 @@ class FolderHandlerHelper @Autowired constructor(
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
 	}
 
+	/**
+	 * Get complete directory tree, will get all folders and files
+	 * And same for every folder inside
+	 * 
+	 * @param folder		folder for getting tree
+	 * @return not found if folder doesn't exist or [Directory]
+	 */
 	suspend fun getTree(folder: Folder): ServerResponse
 	{
 		val data = dataService.getData(folder.path)
@@ -286,6 +326,28 @@ class FolderHandlerHelper @Autowired constructor(
 		return ok().bodyValueAndAwait(directory)
 	}
 
+	/**
+	 * Get memory usage stats for root folder
+	 * 
+	 * @param path	root folder path
+	 * @return [FolderUsageStats] body
+	 */
+	suspend fun rootStats(path: String): ServerResponse
+	{
+		val data = storageService.rootStats(path)
+
+		return if (data != null)
+			ok().bodyValueAndAwait(data)
+		else
+			notFound().buildAndAwait()
+	}
+
+	/**
+	 * Put all files and folders to a directory,
+	 * will run recursively for folders inside
+	 * 
+	 * @param directory		target directory
+	 */
 	private fun populateDirectory(directory: Directory)
 	{
 		// add all files
@@ -299,8 +361,8 @@ class FolderHandlerHelper @Autowired constructor(
 				.toList()
 			directory.folders.addAll(folders)
 		}
-		// run same population for all folders inside
-		directory.folders.parallelStream().forEach { populateDirectory(it) }
+		// run same process for all folders inside
+		directory.folders.parallelStream().forEach(this::populateDirectory)
 	}
 
 	/**
@@ -314,8 +376,8 @@ class FolderHandlerHelper @Autowired constructor(
 	 * */
 	private suspend fun moveFolderAndNewPath(
 		folder			: Folder,
-		targetFolder	: Folder,
-		move 			: suspend (path: String, newPath: String) -> File?
+		targetFolder: Folder,
+		move 				: suspend (path: String, newPath: String) -> File?
 	): ServerResponse
 	{
 		val folderPath 			= folder.path

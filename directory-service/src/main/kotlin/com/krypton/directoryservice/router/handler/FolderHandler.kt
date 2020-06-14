@@ -3,6 +3,7 @@ package com.krypton.directoryservice.router.handler
 import com.krypton.directoryservice.client.file.IFileRepositoryClient
 import com.krypton.directoryservice.client.folder.IFolderRepositoryClient
 import com.krypton.directoryservice.client.folder.IFolderStorageClient
+import com.krypton.directoryservice.model.DirectoryItems
 import com.krypton.directoryservice.model.FolderResponse
 import com.krypton.directoryservice.model.FolderMoveData
 import com.krypton.directoryservice.service.folder.FolderMoveOperationService
@@ -21,7 +22,8 @@ import java.util.*
 @Component
 class FolderHandler @Autowired constructor(
 	private val helper: FolderHandlerHelper,
-	private val folderRepository: IFolderRepositoryClient
+	private val folderRepository: IFolderRepositoryClient,
+	private val folderStorage: IFolderStorageClient
 )
 {
 	/**j
@@ -81,6 +83,26 @@ class FolderHandler @Autowired constructor(
 			ok().bodyValueAndAwait(root)
 		else
 			notFound().buildAndAwait()
+	}
+
+	suspend fun rootStats(): ServerResponse
+	{
+		val stats = folderStorage.getRootStats("/root")
+
+		return if (stats.body != null)
+			ok().bodyValueAndAwait(stats.body)
+		else
+			notFound().buildAndAwait()
+	}
+
+	suspend fun directoryItems(request: ServerRequest): ServerResponse
+	{
+		val id = request.queryParam("id")
+
+		return if (id.isPresent)
+		{
+			helper.directoryItems(id.get())
+		} else badRequest().buildAndAwait()
 	}
 
 	/**
@@ -261,30 +283,37 @@ class FolderHandlerHelper @Autowired constructor(
 		return false
 	}
 
+	suspend fun directoryItems(id: String): ServerResponse = coroutineScope {
+		val files 	= async { files(id) }
+		val folders = async { folders(id) }
+
+		return@coroutineScope ok().bodyValueAndAwait(DirectoryItems(files.await(), folders.await()))
+	}
+
 	/**
 	 * Get all [File]'s of an folder
 	 *
-	 * @param folder	folder model
+	 * @param id	folder id
 	 * @return [File] list
 	 * */
-	private suspend fun files(folder: Folder): List<File>?
+	private suspend fun files(id: String): List<File>
 	{
-		val fileRepoResponse = fileRepository.all(folder.id)
+		val fileRepoResponse = fileRepository.all(id)
 
-		return fileRepoResponse.body
+		return fileRepoResponse.body ?: listOf()
 	}
 
 	/**
 	 * Get all [Folder]'s of an folder
 	 *
-	 * @param folder	folder model
+	 * @param id	folder id
 	 * @return [Folder] list
 	 * */
-	private suspend fun folders(folder: Folder): List<Folder>?
+	private suspend fun folders(id: String): List<Folder>
 	{
-		val folderRepoResponse = repository.all(folder.id)
+		val folderRepoResponse = repository.all(id)
 
-		return folderRepoResponse.body
+		return folderRepoResponse.body ?: listOf()
 	}
 
 	/**

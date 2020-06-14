@@ -2,7 +2,7 @@ import React, { createContext, FC, useState } from "react";
 
 export enum Theme
 {
-  LIGHT = "FFFFFF",
+  LIGHT = "#FFFFFF",
   DARK  = "#181818"
 };
 
@@ -20,7 +20,7 @@ const ThemeConsumer = ThemeContext.Consumer
 
 const ThemeProvider: FC = props =>
 {
-  const [theme, setTheme] = useState<Theme>(Theme.LIGHT)
+  const [theme, setTheme] = useState<Theme>(Theme.DARK)
 
 	return (
 		<ThemeContext.Provider value={{ theme, setTheme }}>

@@ -4,6 +4,7 @@ import com.krypton.directoryservice.client.WebClientBodyResponse
 import com.krypton.directoryservice.model.Directory
 import com.krypton.directoryservice.model.FolderResponse
 import com.krypton.directoryservice.model.FolderMoveData
+import com.krypton.directoryservice.model.FolderUsageStats
 import common.models.Folder
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Autowired
@@ -111,6 +112,25 @@ class FolderStorageClient @Autowired constructor(private val storageClient: WebC
 				.bodyValue(folder)
 				.retrieve()
 				.bodyToMono(Directory::class.java)
+				.map { WebClientBodyResponse(200, it) }
+				.awaitSingle()
+		} catch (e: WebClientResponseException)
+		{
+			WebClientBodyResponse(e.rawStatusCode)
+		} catch (e: Exception)
+		{
+			WebClientBodyResponse(500)
+		}
+	}
+
+	override suspend fun getRootStats(path: String): WebClientBodyResponse<FolderUsageStats>
+	{
+		return try
+		{
+			storageClient.get()
+				.uri("$uri/root/stats?path=${path}")
+				.retrieve()
+				.bodyToMono(FolderUsageStats::class.java)
 				.map { WebClientBodyResponse(200, it) }
 				.awaitSingle()
 		} catch (e: WebClientResponseException)

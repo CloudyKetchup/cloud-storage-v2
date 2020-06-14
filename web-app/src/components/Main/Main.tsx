@@ -5,6 +5,8 @@ import { ThemeContext, Theme }  from "../../context/ThemeContext";
 import MainContent from "../MainContent/MainContent";
 
 import "./main.css";
+import { FoldersProvider } from "../../context/FoldersContext";
+import { FilesProvider } from "../../context/FilesContext";
 
 const Main = () =>
 {
@@ -24,8 +26,12 @@ const Main = () =>
 
   return (
     <div className="main" style={style}>
-      {/* NavBar here */}
-      <MainContent />
+      <FoldersProvider>
+        <FilesProvider>
+          {/* NavBar here */}
+          <MainContent />
+        </FilesProvider>
+      </FoldersProvider>
     </div>
   );
 };
