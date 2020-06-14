@@ -1,7 +1,7 @@
-package com.krypton.directoryservice.model
+package com.krypton.storageservice.model
 
 data class FolderUsageStats(
-	val used: Long,
-	val free: Long,
-	val total: Long
+	val used: Double,
+	val free: Double,
+	val total: Double
 )
