@@ -1,13 +1,16 @@
 version: '3'
 
 services:
+
   # database (MongoDB)
   mongo-db:
     container_name: cloud-storage-mongod_db
     image: mongo
     environment:
+      MONGODB_REPLICA_SET_MODE: primary
       MONGO_INITDB_DATABASE: cloud-storage
     volumes:
       - ./mongo-volume:/data/db
+    command: mongod --replSet rs0
     ports:
       - 27017:27017

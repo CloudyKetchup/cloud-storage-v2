@@ -1,0 +1,94 @@
+version: '3'
+
+services:
+  
+  # database (MongoDB)
+  mongo-db:
+    container_name: cloud-storage-mongod-db
+    image: mongo
+    environment:
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGO_INITDB_DATABASE: cloud-storage
+    volumes:
+      - ./mongo-volume:/data/db
+    command: mongod --replSet rs0
+    networks:
+      - backend
+    ports:
+      - 27017:27017
+
+  # eureka server
+  eureka-server:
+    container_name: eureka-server
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    networks:
+      - backend
+    ports:
+      - 8761:8761
+
+  # gateway service
+  gateway:
+    container_name: cloud-storage-gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    networks:
+      - backend
+      - gateway
+    ports:
+      - 8080:8080
+  
+  # directory service
+  directory-service:
+    container_name: cloud-storage-directory-service
+    restart: always
+    build:
+      context: ./directory-service
+      dockerfile: Dockerfile
+    depends_on:
+      - storage-database-service
+      - storage-service
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    networks:
+      - backend
+  
+  # storage database service
+  storage-database-service:
+    container_name: cloud-storage-database-service
+    build:
+      context: ./storage-database-service
+      dockerfile: Dockerfile
+    depends_on:
+      - mongo-db
+      - eureka-server
+    network_mode: "host"
+
+  # storage-service
+  storage-service:
+    container_name: cloud-storage-service
+    build:
+      context: ./storage-service
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+    networks:
+      - backend
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    volumes:
+      # Use storage folder from host user home, mount it to /cloud-storage volume
+      - ~/cloud-storage:/cloud-storage
+
+networks:
+  gateway:
+    driver: bridge
+  backend:
+    driver: bridge

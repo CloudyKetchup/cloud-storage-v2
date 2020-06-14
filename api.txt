@@ -1,2 +1,6 @@
 eureka-server: 8761
+gateway: 8080
 storage-database-service: 8100
+directory-service: 8200
+storage-service: 8300
+web-app: 3000
