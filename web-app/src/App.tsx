@@ -25,7 +25,11 @@ const App = () =>
 
   useEffect(() =>
   {
-    folderClient.getRoot(onAppError).then(root => root && setFolder(root));
+    folderClient.getRoot(onAppError).then(root =>
+      {
+        root && setFolder(root)
+        setLoading(false);
+      });
   }, []);
 
   return (
