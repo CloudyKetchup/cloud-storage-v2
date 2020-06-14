@@ -4,6 +4,7 @@ import { StorageStats } from "../models/StorageStats";
 import { Folder }       from "../models/Directory";
 
 import axios from "axios";
+import { DirectoryContent } from "../models/DirectoryContent";
 
 class FolderClient
 {
@@ -34,6 +35,13 @@ class FolderClient
       .then(response => response.data)
       .catch(onError)
   );
+
+  getContent = (id: string, onError?: () => void) : Promise<DirectoryContent | undefined> =>
+  (
+    axios.get(`${this.URL}/content?id=${id}`)
+      .then(response => response.data)
+      .catch(onError)
+  )
 }
 
 export default FolderClient;
