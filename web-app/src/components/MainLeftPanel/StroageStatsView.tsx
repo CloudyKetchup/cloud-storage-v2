@@ -12,19 +12,11 @@ import FolderClient from "../../api/FolderClient";
 const StorageStatsView: FC<PropsWithTheme> = ({ theme }) =>
 {
   const [stats, setStats] = useState<StorageStats>();
-  const [error, setError] = useState<boolean>(false);
   const client = FolderClient.instance();
 
   useEffect(() =>
   {
-    const fetchStats = async () =>
-    {
-      const { data, error } = await client.getRootStats();
-
-      data ? setStats(data) : setError(error !== null);
-    };
-
-    fetchStats();
+    client.getRootStats().then(stats => stats && setStats(stats));
   }, [])
 
   const calcPercent = () : number =>
@@ -38,8 +30,6 @@ const StorageStatsView: FC<PropsWithTheme> = ({ theme }) =>
     return 0;
   };
 
-  const style = { background: theme == Theme.DARK ? "#4a4a4a" : "" };
-
   return (
     <div className={`storage-stats-view`}>
       <CompactSeparator/>
@@ -48,7 +38,12 @@ const StorageStatsView: FC<PropsWithTheme> = ({ theme }) =>
           <span>{stats?.used || 0} / {stats?.total || 0} GB</span>
         </div>
         <div>
-          <div className="storage-stats-memory-bar" style={style}>
+          <div
+            style={{
+              background: theme == Theme.DARK ? "#4a4a4a" : ""
+            }}
+            className="storage-stats-memory-bar"
+          >
             <div style={{ width: `${calcPercent()}%` }}/>
           </div>
         </div>
