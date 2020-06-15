@@ -1,7 +1,4 @@
 import React, { useContext, useEffect } from 'react';
-import { Router } from 'react-router';
-
-import { createBrowserHistory } from "history";
 
 import MainLeftPanel  from './components/MainLeftPanel/MainLeftPanel';
 import Main           from './components/Main/Main';
@@ -20,29 +17,28 @@ const App = () =>
   const { setFolder } = useContext(DirectoryContext);
   const folderClient  = FolderClient.instance();
 
+  const onAppError = () =>
+  {
+    setLoading(false);
+    setErrorLoadingApp(true);
+  };
+
   useEffect(() =>
   {
-    const fetchRoot = async () =>
-    {
-      const { data, error } = await folderClient.getRoot()
-
-      setLoading(false);
-
-      data ? setFolder(data) : setErrorLoadingApp(error !== null);
-    };
-
-    fetchRoot();
+    folderClient.getRoot(onAppError).then(root =>
+      {
+        root && setFolder(root)
+        setLoading(false);
+      });
   }, []);
 
   return (
-    <Router history={createBrowserHistory()}>
-      <div className="App">
-        <ThemeProvider>
-          <MainLeftPanel />
-          <Main />
-        </ThemeProvider>
-      </div>
-    </Router>
+    <div className="App">
+      <ThemeProvider>
+        <MainLeftPanel />
+        <Main />
+      </ThemeProvider>
+    </div>
   );
 };
 
