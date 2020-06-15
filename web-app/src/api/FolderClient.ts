@@ -5,6 +5,7 @@ import { Folder }       from "../models/Directory";
 
 import axios from "axios";
 import { DirectoryContent } from "../models/DirectoryContent";
+import { ApiResponse } from "../models/ApiResponse";
 
 class FolderClient
 {
@@ -22,25 +23,25 @@ class FolderClient
     return FolderClient.inst;
   }
 
-  getRoot = (onError?: () => void) : Promise<Folder | undefined> =>
+  getRoot = () : Promise<ApiResponse<Folder>> =>
   (
     axios.get(`${this.URL}/root`)
-      .then(response => response.data)
-      .catch(onError)
+      .then(response => ({ data : response.data }))
+      .catch(e => ({ error : e }))
   );
 
-  getRootStats = (onError?: () => void) : Promise<StorageStats | undefined> =>
+  getRootStats = () : Promise<ApiResponse<StorageStats>> =>
   (
     axios.get(`${this.URL}/root/stats`)
-      .then(response => response.data)
-      .catch(onError)
+      .then(response => ({ data : response.data }))
+      .catch(e => ({ error : e }))
   );
 
-  getContent = (id: string, onError?: () => void) : Promise<DirectoryContent | undefined> =>
+  getContent = (id: string) : Promise<ApiResponse<DirectoryContent>> =>
   (
     axios.get(`${this.URL}/content?id=${id}`)
-      .then(response => response.data)
-      .catch(onError)
+      .then(response => ({ data : response.data }))
+      .catch(e => ({ error : e }))
   )
 }
 
