@@ -20,19 +20,18 @@ const App = () =>
   const { setFolder } = useContext(DirectoryContext);
   const folderClient  = FolderClient.instance();
 
-  const onAppError = () =>
-  {
-    setLoading(false);
-    setErrorLoadingApp(true);
-  };
-
   useEffect(() =>
   {
-    folderClient.getRoot(onAppError).then(root =>
-      {
-        root && setFolder(root)
-        setLoading(false);
-      });
+    const fetchRoot = async () =>
+    {
+      const { data, error } = await folderClient.getRoot()
+
+      setLoading(false);
+
+      data ? setFolder(data) : setErrorLoadingApp(error !== null);
+    };
+
+    fetchRoot();
   }, []);
 
   return (
