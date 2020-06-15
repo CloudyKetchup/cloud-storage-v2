@@ -1,4 +1,7 @@
 import React, { useContext, useEffect } from 'react';
+import { Router } from 'react-router';
+
+import { createBrowserHistory } from "history";
 
 import MainLeftPanel  from './components/MainLeftPanel/MainLeftPanel';
 import Main           from './components/Main/Main';
@@ -33,12 +36,14 @@ const App = () =>
   }, []);
 
   return (
-    <div className="App">
-      <ThemeProvider>
-        <MainLeftPanel />
-        <Main />
-      </ThemeProvider>
-    </div>
+    <Router history={createBrowserHistory()}>
+      <div className="App">
+        <ThemeProvider>
+          <MainLeftPanel />
+          <Main />
+        </ThemeProvider>
+      </div>
+    </Router>
   );
 };
 
