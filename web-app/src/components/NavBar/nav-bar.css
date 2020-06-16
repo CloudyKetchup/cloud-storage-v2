@@ -1,35 +1,72 @@
-.nav-bar {
+.nav-bar
+{
+    display: flex;
     width: calc(100vw-300px);
     height: 70px;
-    /* box-shadow: 0px 4px 30px rgba(0, 0, 0, 0.15); */
     background-color: burlywood;
-    display: flex;
     align-items: center;
     padding-left: 40px;
     padding-right: 40px;
 }
-.nav-folder-arrow {
-    width: 15px;
-    height: 15px;
-    display: block;
+
+.nav-bar > div:first-child
+{
+    overflow-y: auto;
+    overflow-x: hidden;
 }
-.nav-folder {
+
+.nav-bar-control
+{
+    display: flex;
+    width: fit-content;
+    margin-left: auto;
+}
+
+.nav-bar-control > div
+{
+    height: 15px;
+    width: 15px;
+    cursor: pointer;
+}
+
+.nav-bar-control > div:first-child
+{
+    margin-top: -2px;
+    margin-right: 40px;
+}
+
+.nav-bar-control > div:first-child svg
+{
+    width: 20px;
+    height: 20px;
+}
+
+.nav-bar-control svg
+{
+    height: 100%;
+    width: 100%;
+}
+
+.nav-folder
+{
     display: flex;
     align-items: center;
 }
-.nav-folder>div:last-child {
-    
+
+.nav-folder > div:last-child
+{
     margin-left: 20px;
     margin-right: 20px;
 }
-.nav-folder:last-child {
+
+.nav-folder:last-child
+{
     padding-bottom: 4px;
 }
-.nav-bars-menu {
-    height: 14px;
+
+.nav-folder-arrow
+{
     width: 15px;
-}
-.nav-bars-menu-btn {
-    
-    margin-left: auto;
+    height: 15px;
+    display: block;
 }

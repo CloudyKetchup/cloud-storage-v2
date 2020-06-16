@@ -1,22 +1,30 @@
-import React from "react";
+import React, { useContext } from "react";
 
-import { ReactComponent as Arrow } from "../../assets/icons/arrow-right.svg"
+import { DirectoryContext } from "../../context/DirectoryContext";
+
+import { ReactComponent as Arrow } 		from "../../assets/icons/arrow-right.svg"
+import { ReactComponent as HomeSvg } 	from "../../assets/icons/home.svg";
 
 import './nav-bar.css';
 
-// TODO: NavItem -> NavFolder
+const NavFolder = ({ folder, last }) =>
+{
+	const { setFolder } = useContext(DirectoryContext);
+	const { name, root } = folder;
 
-const NavFolder = ({ folder, last }) => (
-    <div className='nav-folder' >
-        <div>
-            <span>{folder.name}</span>
-        </div> 
-        
-        <div>
-            {!last && <Arrow className='nav-folder-arrow' />}
-        </div>
-    </div>
-);
+	return (
+		<div className='nav-folder' onClick={() => setFolder(folder)}>
+			<div>
+				<span style={{ cursor : "pointer" }}>
+					{ !root ? name : <HomeSvg style={{ marginTop : "5px" }}/> }
+				</span>
+			</div>
+			<div>
+				{ !last && <Arrow className='nav-folder-arrow' /> }
+			</div>
+		</div>
+	)
+};
 
 
 export default NavFolder

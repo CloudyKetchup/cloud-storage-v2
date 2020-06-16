@@ -52,8 +52,8 @@ const DirectoryContent: FC<IProps> = ({ folder }) =>
       <Loading
         loading={loading}
         error={error}
-        fallback={<FetchErrorBanner text="Failed fetching folder content" height="calc(100% - 20px)"/>}
-        style={{ height : "calc(100% - 20px)" }}
+        fallback={<FetchErrorBanner text="Failed fetching folder content" height="calc(100% - 90px)"/>}
+        style={{ height : "calc(100% - 90px)" }}
       >
           {/* // TODO: render files and folders here */}
       </Loading>
