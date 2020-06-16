@@ -43,6 +43,13 @@ class FolderClient
       .then(response => ({ data : response.data }))
       .catch(e => ({ error : e }))
   )
+
+  getPreviousFolders = (id: string) : Promise<ApiResponse<Folder[]>> =>
+  (
+    axios.get(`${this.URL}/previous/folders?id=${id}`)
+      .then(response => ({ data : response.data }))
+      .catch(e => ({ error : e }))
+  );
 }
 
 export default FolderClient;
