@@ -21,8 +21,8 @@ const MainContent = () =>
       <Loading
         loading={loading}
         error={errorLoadingApp}
-        fallback={<FetchErrorBanner text="Error happened" height="calc(100% - 20px)"/>}
-        style={{ height: "calc(100% - 20px)" }}
+        fallback={<FetchErrorBanner text="Error happened" height="calc(100% - 90px)"/>}
+        style={{ height: "calc(100% - 90px)" }}
       >
         {folder && <DirectoryContent folder={folder}/>}
       </Loading>
