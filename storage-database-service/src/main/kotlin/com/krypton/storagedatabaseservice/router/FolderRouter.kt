@@ -23,6 +23,7 @@ class FolderRouter @Autowired constructor(private val handler: FolderHandler)
 			GET("/all", handler::all)
 			GET("/", handler::find)
 			GET("/tree", handler::getTree)
+			GET("/previous/folders", handler::getPreviousFolders)
 		}
 	}
 }
