@@ -1,35 +1,117 @@
-import React, { FC, useState, useContext } from "react";
+import React, { FC, useEffect, useState, useContext } from "react";
 
-import { Folder } from "../../models/Directory";
+import ContextMenu, { ContextMenuActions } from "./ContextMenu";
 
-import { ThemeContext, Theme } from "../../context/ThemeContext";
+import { Folder } 							from "../../models/Directory";
+import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 
-import { ReactComponent as FolderSvg } from "../../assets/icons/folder.svg";
+import { ReactComponent as FolderSvg } 	from "../../assets/icons/folder.svg";
+import { ReactComponent as DotsSvg } 		from "../../assets/icons/vertical-dots.svg";
+import { ReactComponent as CloseSvg }		from "../../assets/icons/delete.svg";
 
 import "./folder-item.css";
+
+//TODO: directory items context for only one options menu per child
 
 type IProps = { data: Folder };
 
 const FolderItem: FC<IProps> = ({ data }) =>
 {
-	const { theme } = useContext(ThemeContext);
-	const { id, name } = data;
+	const [menu, setMenu] = useState<boolean>(false);
+	const { theme } 			= useContext(ThemeContext);
+	const { id, name } 		= data;
 
-	const substringName = (name: string) : string =>
+	useEffect(() =>
 	{
-		return name.length > 14 ? `${name.substring(0, 13)}...` : name;
+		const optionsHover = async () =>
+		{
+			const div 		= document.getElementById(`folder-item-${id}`);
+			const options = document.getElementById(`folder-item-${id}-options`);
+
+			if (div && options)
+			{
+				const onOptionsHover = async () =>
+				{
+					options.style.display = "unset";
+				};
+
+				const outOptionsHover = async () =>
+				{
+					options.style.display = "none";
+				};
+
+				div.addEventListener("mouseover", onOptionsHover);
+				div.addEventListener("mouseout", outOptionsHover);
+
+				return () =>
+				{
+					div.removeEventListener("mouseover", onOptionsHover);
+					div.removeEventListener("mouseout", outOptionsHover);
+				};
+			}
+		}
+
+		optionsHover();
+	}, []);
+
+	const substringName = (name: string): string =>
+	{
+		return name.length > 13 ? `${name.substring(0, 12)}...` : name;
+	};
+
+	const onCopy = async (id: string) =>
+	{
+		// TODO: implement
+	};
+
+	const onCut = async (id: string) =>
+	{
+		// TODO: implement
+	};
+
+	const onDelete = async (id: string) =>
+	{
+		// TODO: implement
+	};
+
+	const actions: ContextMenuActions = {
+		onCut 	: onCut,
+		onCopy	: onCopy,
+		onDelete: onDelete
 	};
 
 	return (
-		<div className={`folder-item ${ theme === Theme.DARK && "folder-item-dark" }`}>
+		<div
+			id={`folder-item-${id}`}
+			className={`folder-item ${ theme === Theme.DARK && "folder-item-dark" }`}
+		>
 			<div className="folder-item-icon">
 				<div>
 					<FolderSvg />
 				</div>
 			</div>
-			<div className={`${ theme === Theme.DARK && "folder-text-dark" }`}>
+			<div className="folder-item-text">
 				<span>{substringName(name)}</span>
 			</div>
+			<div
+				id={`folder-item-${id}-options`}
+				className="folder-item-options"
+				style={{ display : "none" }}
+				onClick={() => setMenu(!menu)}
+			>
+				{
+					menu
+					?
+					<CloseSvg fill={ theme === Theme.LIGHT ? "#181818" : "white" }/>
+					:
+					<DotsSvg fill={ theme === Theme.LIGHT ? "#181818" : "white" }/>
+				}
+			</div>
+			{
+				menu
+				&&
+				<ContextMenu folderId={id} actions={actions}/>
+			}
 		</div>
 	);
 };
