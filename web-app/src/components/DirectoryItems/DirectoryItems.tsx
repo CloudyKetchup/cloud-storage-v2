@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 
 import { CompactSeparator } from "../CompactSeparator/CompactSeparator";
 import EmptyDirectory				from "../EmptyDirectory/EmptyDirectory";
+import FolderItem 					from "../FolderItem/FolderItem";
 
 import { FilesContext } 	from "../../context/FilesContext";
 import { FoldersContext } from "../../context/FoldersContext";
@@ -29,7 +30,6 @@ const DirectoryItems = () =>
 				?
 				<EmptyDirectory text="Empty here"/>
 				:
-				{ /* Render items if present */ }
 				<div className="directory-items">
 					{
 						// render files if list not empty
@@ -39,7 +39,7 @@ const DirectoryItems = () =>
 							<CompactSeparator/>
 							<div>
 								<ItemsViewHeader title="Files"/>
-								<div>
+								<div className="file-items-grid">
 									{}
 								</div>
 							</div>
@@ -53,8 +53,8 @@ const DirectoryItems = () =>
 							<CompactSeparator/>
 							<div>
 								<ItemsViewHeader title="Folders"/>
-								<div>
-								{}
+								<div className="folder-items-grid">
+									{folders.flatMap(f => <FolderItem data={f}/>)}
 								</div>
 							</div>
 						</>
