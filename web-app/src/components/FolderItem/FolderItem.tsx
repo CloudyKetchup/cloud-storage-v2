@@ -4,6 +4,7 @@ import ContextMenu, { ContextMenuActions } from "./ContextMenu";
 
 import { Folder } 							from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
+import { ContextMenuContext }		from "../../context/ContextMenuContext";
 
 import { ReactComponent as FolderSvg } 	from "../../assets/icons/folder.svg";
 import { ReactComponent as DotsSvg } 		from "../../assets/icons/vertical-dots.svg";
@@ -17,9 +18,10 @@ type IProps = { data: Folder };
 
 const FolderItem: FC<IProps> = ({ data }) =>
 {
-	const [menu, setMenu] = useState<boolean>(false);
-	const { theme } 			= useContext(ThemeContext);
-	const { id, name } 		= data;
+	// const [menu, setMenu] = useState<boolean>(false);
+	const { menuId, setMenuId } = useContext(ContextMenuContext);
+	const { theme } 						= useContext(ThemeContext);
+	const { id, name } 					= data;
 
 	useEffect(() =>
 	{
@@ -80,6 +82,17 @@ const FolderItem: FC<IProps> = ({ data }) =>
 		onDelete: onDelete
 	};
 
+	const toggleMenu = () =>
+	{
+		if (menuId === id)
+		{
+			setMenuId("");
+		} else
+		{
+			setMenuId(id);
+		}
+	};
+
 	return (
 		<div
 			id={`folder-item-${id}`}
@@ -97,10 +110,10 @@ const FolderItem: FC<IProps> = ({ data }) =>
 				id={`folder-item-${id}-options`}
 				className="folder-item-options"
 				style={{ display : "none" }}
-				onClick={() => setMenu(!menu)}
+				onClick={toggleMenu}
 			>
 				{
-					menu
+					menuId === id
 					?
 					<CloseSvg fill={ theme === Theme.LIGHT ? "#181818" : "white" }/>
 					:
@@ -108,7 +121,7 @@ const FolderItem: FC<IProps> = ({ data }) =>
 				}
 			</div>
 			{
-				menu
+				menuId === id
 				&&
 				<ContextMenu folderId={id} actions={actions}/>
 			}

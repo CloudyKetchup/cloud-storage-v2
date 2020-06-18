@@ -4,8 +4,9 @@ import { CompactSeparator } from "../CompactSeparator/CompactSeparator";
 import EmptyDirectory				from "../EmptyDirectory/EmptyDirectory";
 import FolderItem 					from "../FolderItem/FolderItem";
 
-import { FilesContext } 	from "../../context/FilesContext";
-import { FoldersContext } from "../../context/FoldersContext";
+import { FilesContext } 				from "../../context/FilesContext";
+import { FoldersContext } 			from "../../context/FoldersContext";
+import { ContextMenuProvider } 	from "../../context/ContextMenuContext";
 
 import "./directory-items.css";
 
@@ -31,34 +32,36 @@ const DirectoryItems = () =>
 				<EmptyDirectory text="Empty here"/>
 				:
 				<div className="directory-items">
-					{
-						// render files if list not empty
-						files.length > 0
-						&&
-						<>
-							<CompactSeparator/>
-							<div>
-								<ItemsViewHeader title="Files"/>
-								<div className="file-items-grid">
-									{}
+					<ContextMenuProvider>
+						{
+							// render files if list not empty
+							files.length > 0
+							&&
+							<>
+								<CompactSeparator/>
+								<div>
+									<ItemsViewHeader title="Files"/>
+									<div className="file-items-grid">
+										{}
+									</div>
 								</div>
-							</div>
-						</>
-					}
-					{
-						// render folders if list not empty
-						folders.length > 0
-						&&
-						<>
-							<CompactSeparator/>
-							<div>
-								<ItemsViewHeader title="Folders"/>
-								<div className="folder-items-grid">
-									{folders.flatMap(f => <FolderItem data={f}/>)}
+							</>
+						}
+						{
+							// render folders if list not empty
+							folders.length > 0
+							&&
+							<>
+								<CompactSeparator/>
+								<div>
+									<ItemsViewHeader title="Folders"/>
+									<div className="folder-items-grid">
+										{folders.flatMap(f => <FolderItem data={f}/>)}
+									</div>
 								</div>
-							</div>
-						</>
-					}
+							</>
+						}
+					</ContextMenuProvider>
 				</div>
 			}
 		</>
