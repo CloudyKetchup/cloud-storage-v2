@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 import { CompactSeparator } from "../CompactSeparator/CompactSeparator";
 import EmptyDirectory				from "../EmptyDirectory/EmptyDirectory";
 import FolderItem 					from "../FolderItem/FolderItem";
+import FileItem 						from "../FileItem/FileItem";
 
 import { FilesContext } 				from "../../context/FilesContext";
 import { FoldersContext } 			from "../../context/FoldersContext";
@@ -42,7 +43,7 @@ const DirectoryItems = () =>
 								<div>
 									<ItemsViewHeader title="Files"/>
 									<div className="file-items-grid">
-										{}
+										{files.flatMap(f => <FileItem key={f.id} data={f}/>)}
 									</div>
 								</div>
 							</>
@@ -52,11 +53,10 @@ const DirectoryItems = () =>
 							folders.length > 0
 							&&
 							<>
-								<CompactSeparator/>
 								<div>
 									<ItemsViewHeader title="Folders"/>
 									<div className="folder-items-grid">
-										{folders.flatMap(f => <FolderItem data={f}/>)}
+										{folders.flatMap(f => <FolderItem key={f.id} data={f}/>)}
 									</div>
 								</div>
 							</>
