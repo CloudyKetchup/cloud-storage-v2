@@ -8,6 +8,7 @@
 	-webkit-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.15);
 	-moz-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.15);
 	box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.15);
+	position: relative;
 }
 
 .folder-item,
@@ -26,6 +27,7 @@
 .folder-item-dark
 {
 	background: #121212;
+	fill: white;
 }
 
 .folder-item-icon
@@ -69,4 +71,28 @@
 {
 	height: 100%;
 	width: 100%;
+}
+
+.folder-item-contextmenu
+{
+	margin-top: 0;
+	padding: 5px !important;
+	width: unset;
+	height: calc(100% - 10px);
+	animation-name: folder-item-contextmenu-slide;
+	animation-duration: 0.2s;
+}
+
+@keyframes folder-item-contextmenu-slide
+{
+	from
+	{
+		margin-top: 20px;
+		opacity: 0;
+	}
+	to
+	{
+		margin-top: 0;
+		opacity: 1;
+	}
 }
