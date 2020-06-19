@@ -1,0 +1,31 @@
+.directory-items
+{
+	padding: 30px;
+	padding-top: 0;
+	height: fill-available;
+	overflow-y: auto;
+}
+
+.items-view-header
+{
+	display: flex;
+}
+
+.folder-items-grid,
+.file-items-grid
+{
+	display: grid;
+	grid-gap: 20px;
+}
+
+.folder-items-grid
+{
+	grid-auto-rows: 60px;
+	grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+}
+
+.file-items-grid
+{
+	grid-auto-rows: 170px;
+	grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+}

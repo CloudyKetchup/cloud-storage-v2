@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, FC } from "react";
 
 import FetchErrorBanner from "../FetchErrorBanner/FetchErrorBanner";
 import Loading          from "../LoadingComponent/LoadingComponent";
+import DirectoryItems   from "../DirectoryItems/DirectoryItems";
 
 import { Folder } from "../../models/Directory";
 
@@ -31,7 +32,7 @@ const DirectoryContent: FC<IProps> = ({ folder }) =>
       setLoading(true);
 
       const { data, error } = await folderClient.getContent(folder.id);
-
+      
       setLoading(false);
 
       if (data)
@@ -55,7 +56,7 @@ const DirectoryContent: FC<IProps> = ({ folder }) =>
         fallback={<FetchErrorBanner text="Failed fetching folder content" height="calc(100% - 90px)"/>}
         style={{ height : "calc(100% - 90px)" }}
       >
-          {/* // TODO: render files and folders here */}
+        <DirectoryItems/>
       </Loading>
     </div>
   );
