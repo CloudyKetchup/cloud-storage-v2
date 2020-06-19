@@ -1,6 +1,6 @@
 import React, { FC, useContext, useEffect } from "react";
 
-import ContextMenu, { ContextMenuActions } from "./ContextMenu";
+import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
 
 import { File } 								from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";

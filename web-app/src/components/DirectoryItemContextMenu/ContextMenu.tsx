@@ -1,4 +1,4 @@
-import React, { FC, useContext } from "react";
+import React, { FC, useContext, CSSProperties } from "react";
 
 import { ThemeContext, Theme } from "../../context/ThemeContext";
 
@@ -18,15 +18,22 @@ export type ContextMenuActions = {
 	onDelete 	 : () => void
 };
 
-type IProps = { actions : ContextMenuActions };
+type IProps = {
+	actions 		: ContextMenuActions,
+	styles?			: CSSProperties,
+	className?	: string
+};
 
-const ContextMenu: FC<IProps> = ({ actions }) =>
+const ContextMenu: FC<IProps> = ({ actions, styles, className }) =>
 {
 	const { theme } = useContext(ThemeContext);
 	const { onDownload, onCopy, onCut, onTrash, onDelete } = actions;
 
 	return (
-		<div className={`file-contextmenu ${ theme === Theme.DARK ? "file-contextmenu-dark" : "" }`}>
+		<div
+			className={`directory-item-contextmenu ${className} ${ theme === Theme.DARK ? "directory-item-contextmenu-dark" : "" }`}
+			style={styles}
+		>
 			<div onClick={onDownload}>
 				<DownlaodSvg />
 			</div>
