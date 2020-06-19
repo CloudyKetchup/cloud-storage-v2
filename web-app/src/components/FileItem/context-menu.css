@@ -1,0 +1,63 @@
+.file-contextmenu
+{
+	display: flex;
+	position: absolute;
+	width: 90%;
+	border-radius: 5px;
+	left: 0;
+	right: 0;
+	margin: auto;
+	margin-top: -10px;
+	padding: 0 !important;
+	padding-left: 5px !important;
+	padding-right: 5px !important;
+	transition: 0.2s;
+	animation-name: file-contextmenu-slide;
+	animation-duration: 0.2s;
+}
+
+.file-contextmenu,
+.file-contextmenu > *
+{
+	transition: 0.2s;
+}
+
+.file-contextmenu-dark
+{
+	fil: white;
+}
+
+.file-contextmenu > div
+{
+	border-radius: 5px;
+	padding: 5px;
+	height: calc(100% - 10px);
+	width: 20%;
+	text-align: center;
+}
+
+.file-contextmenu > div:hover
+{
+	background: #f5f5f5;
+}
+
+.file-contextmenu svg
+{
+	margin-top: 10px;
+	height: 20px;
+	width: 20px;
+}
+
+@keyframes file-contextmenu-slide
+{
+	from
+	{
+		margin-top: 20px;
+		opacity: 0;
+	}
+	to
+	{
+		margin-top: -10px;
+		opacity: 1;
+	}
+}
