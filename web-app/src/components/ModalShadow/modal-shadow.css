@@ -1,0 +1,47 @@
+.modal-shadow
+{
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	position: absolute;
+	background: rgba(241, 241, 241, 0.8);
+	animation-name: modal-shadow-fade;
+	animation-duration: 0.2s;
+}
+
+.modal-shadow-dark
+{
+	background: rgba(24, 24, 24, 0.8);
+}
+
+.modal-shadow,
+.modal-shadow > div
+{
+	transition: 0.2s;
+}
+
+.modal-shadow,
+.modal-shadow > div
+{
+	height: 100%;
+	width: 100%;
+}
+
+.modal-shadow > div
+{
+	position: relative;
+}
+
+@keyframes modal-shadow-fade
+{
+	from
+	{
+		opacity: 0;
+	}
+	to
+	{
+		opacity: 1;
+	}
+}
