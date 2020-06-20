@@ -22,11 +22,6 @@
 	transition: 0.2s;
 }
 
-.directory-item-contextmenu-dark
-{
-	fil: white;
-}
-
 .directory-item-contextmenu > div
 {
 	border-radius: 5px;
@@ -46,6 +41,16 @@
 	margin-top: 10px;
 	height: 20px;
 	width: 20px;
+}
+
+.directory-item-contextmenu-dark
+{
+	fil: white;
+}
+
+.directory-item-contextmenu-dark > div:hover
+{
+	background: black;
 }
 
 @keyframes directory-item-contextmenu-slide
