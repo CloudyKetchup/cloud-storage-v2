@@ -1,8 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { Router } from 'react-router';
 
-import { createBrowserHistory } from "history";
-
 import MainLeftPanel  from './components/MainLeftPanel/MainLeftPanel';
 import Main           from './components/Main/Main';
 
@@ -11,6 +9,8 @@ import { DirectoryContext } from './context/DirectoryContext';
 import { ThemeProvider }    from './context/ThemeContext';
 
 import FolderClient from './api/FolderClient';
+
+import { history } from "./utils/history";
 
 import './App.css';
 
@@ -35,7 +35,7 @@ const App = () =>
   }, []);
 
   return (
-    <Router history={createBrowserHistory()}>
+    <Router history={history}>
       <div className="App">
         <ThemeProvider>
           <MainLeftPanel />
