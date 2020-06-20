@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { Link } from "react-router-dom";
 
 import NavFolder from './NavFolder';
 
@@ -6,9 +7,10 @@ import FolderClient 						from '../../api/FolderClient';
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { DirectoryContext } 		from '../../context/DirectoryContext';
 
-import { ReactComponent as BurgerSvg } 	from "../../assets/icons/three-bars-menu.svg";
-import { ReactComponent as MoonSvg } 		from "../../assets/icons/moon.svg";
-import { ReactComponent as SunSvg } 		from "../../assets/icons/sun.svg";
+import { ReactComponent as BurgerSvg } 		from "../../assets/icons/three-bars-menu.svg";
+import { ReactComponent as MoonSvg } 			from "../../assets/icons/moon.svg";
+import { ReactComponent as SunSvg } 			from "../../assets/icons/sun.svg";
+import { ReactComponent as FolderAddSvg } from "../../assets/icons/folder-add.svg";
 
 import { isLastById } from '../../utils/array.utils';
 
@@ -16,8 +18,8 @@ import './nav-bar.css';
 
 const NavBar = () =>
 {
-	const { folder } = useContext(DirectoryContext);
-	const { theme, setTheme } = useContext(ThemeContext);
+	const { folder }						= useContext(DirectoryContext);
+	const { theme, setTheme } 	= useContext(ThemeContext);
 	const [folders, setFolders] = useState([]);
 
 	const folderClient = FolderClient.instance();
@@ -63,6 +65,11 @@ const NavBar = () =>
 				)}
 			</div>
 			<div className="nav-bar-control">
+				<div>
+					<Link to="/folder/create" replace>
+						<FolderAddSvg/>
+					</Link>
+				</div>
 				<div>
 					{
 						theme === Theme.LIGHT
