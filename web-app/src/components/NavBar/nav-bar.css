@@ -29,13 +29,31 @@
     cursor: pointer;
 }
 
-.nav-bar-control > div:first-child
+.nav-bar-control > div
 {
     margin-top: -2px;
-    margin-right: 40px;
+    margin-left: 15px;
+    margin-right: 15px;
 }
 
-.nav-bar-control > div:first-child svg
+.nav-bar-control > div:first-child
+{
+    margin-top: -4px;
+    margin-right: 20px;
+}
+
+.nav-bar-control > div:last-child
+{
+    margin-right: 0;
+}
+
+.nav-bar-control > div:nth-child(2)
+{
+    margin-top: -5px;
+}
+
+.nav-bar-control > div:first-child svg,
+.nav-bar-control > div:nth-child(2) svg
 {
     width: 20px;
     height: 20px;
