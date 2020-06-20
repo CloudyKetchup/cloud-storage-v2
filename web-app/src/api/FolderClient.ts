@@ -1,11 +1,11 @@
 import { API_URL } from "./env.config";
 
-import { StorageStats } from "../models/StorageStats";
-import { Folder }       from "../models/Directory";
+import { StorageStats }     from "../models/StorageStats";
+import { Folder }           from "../models/Directory";
+import { DirectoryContent } from "../models/DirectoryContent";
+import { ApiResponse }      from "../models/ApiResponse";
 
 import axios from "axios";
-import { DirectoryContent } from "../models/DirectoryContent";
-import { ApiResponse } from "../models/ApiResponse";
 
 class FolderClient
 {
@@ -47,6 +47,13 @@ class FolderClient
   getPreviousFolders = (id: string) : Promise<ApiResponse<Folder[]>> =>
   (
     axios.get(`${this.URL}/previous/folders?id=${id}`)
+      .then(response => ({ data : response.data }))
+      .catch(e => ({ error : e }))
+  );
+
+  create = (folder: Folder, folderName: string) : Promise<ApiResponse<Folder>> =>
+  (
+    axios.post(`${this.URL}/create?name=${folderName}`, folder)
       .then(response => ({ data : response.data }))
       .catch(e => ({ error : e }))
   );
