@@ -1,6 +1,10 @@
 import React, { FC, CSSProperties, useContext } from "react";
 
-import { ThemeContext, Theme } from "../../context/ThemeContext";
+import FileClient from "../../api/FileClient";
+
+import { ThemeContext, Theme }  from "../../context/ThemeContext";
+import { DirectoryContext }     from "../../context/DirectoryContext";
+import { FilesContext }         from "../../context/FilesContext";
 
 import { ReactComponent as UploadSvg } from "../../assets/icons/upload.svg";
 
@@ -13,7 +17,10 @@ type IProps = {
 
 const UploadButton: FC<IProps> = ({ className, style }) =>
 {
-  const { theme } = useContext(ThemeContext);
+  const { theme }   = useContext(ThemeContext);
+  const { folder }  = useContext(DirectoryContext);
+  const { addFile } = useContext(FilesContext);
+  const fileClient  = FileClient.instance();
 
   const onClick = async () =>
   {
@@ -22,7 +29,7 @@ const UploadButton: FC<IProps> = ({ className, style }) =>
     input.click()
   };
 
-  const upload = async () =>
+  const onUpload = async () =>
   {
     const input = document.getElementById("file-upload-input") as HTMLInputElement;
 
@@ -34,7 +41,19 @@ const UploadButton: FC<IProps> = ({ className, style }) =>
 
       formData.append("file", file);
 
-      // TODO: upload
+      await upload(formData);
+    }
+  };
+
+  const upload = async (formData: FormData) =>
+  {
+    if (folder)
+    {
+      const { data, error } = await fileClient.upload(formData, folder.id);
+
+      data && addFile(data);
+
+      //TODO: error notification
     }
   };
 
@@ -58,7 +77,7 @@ const UploadButton: FC<IProps> = ({ className, style }) =>
         id="file-upload-input"
         style={{ display: "none" }}
         type="file"
-        onChange={upload}
+        onChange={onUpload}
       />
       <button
         id="upload-button"
