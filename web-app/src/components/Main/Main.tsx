@@ -28,10 +28,8 @@ const Main = () =>
   return (
     <div className="main" style={style}>
       <FoldersProvider>
-        <FilesProvider>
-          <NavBar/>
-          <MainContent />
-        </FilesProvider>
+        <NavBar/>
+        <MainContent />
       </FoldersProvider>
     </div>
   );

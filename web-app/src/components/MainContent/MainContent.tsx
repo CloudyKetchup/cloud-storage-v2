@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Route, useHistory } from "react-router";
+import { Route, Switch, useHistory } from "react-router";
 
 import DirectoryInfo    from "../DirectoryInfoHeader/DirectoryInfoHeader";
 import DirectoryContent from "../DirectoryContent/DirectoryContent";
@@ -7,6 +7,7 @@ import FetchErrorBanner from "../FetchErrorBanner/FetchErrorBanner";
 import Loading          from "../LoadingComponent/LoadingComponent";
 import TextSubmitModal  from "../TextSubmitModal/TextSubmitModal";
 import ModalShadow      from "../ModalShadow/ModalShadow";
+import FileUploadPane   from "../FileUploadPane/FileUploadPane";
 
 import { AppContext }       from "../../context/AppContext";
 import { DirectoryContext } from "../../context/DirectoryContext";
@@ -47,17 +48,20 @@ const MainContent = () =>
       >
         {folder && <DirectoryContent folder={folder}/>}
       </Loading>
-      <Route path="/folder/create" component={() =>
-        <ModalShadow>
-          <TextSubmitModal
-            title="Create new folder"
-            buttonText="Create"
-            placeholder="New folder name"
-            onSubmit={onFolderCreate}
-            onClose={() => history.push("/")}
-          />
-        </ModalShadow>
-      }/>
+      <Switch>
+        <Route path="/folder/create" component={() =>
+          <ModalShadow>
+            <TextSubmitModal
+              title="Create new folder"
+              buttonText="Create"
+              placeholder="New folder name"
+              onSubmit={onFolderCreate}
+              onClose={() => history.push("/")}
+            />
+          </ModalShadow>
+        }/>
+        <Route path="/file/upload" component={FileUploadPane}/>
+      </Switch>
     </div>
   );
 };

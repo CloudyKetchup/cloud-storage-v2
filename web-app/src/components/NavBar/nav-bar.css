@@ -36,24 +36,24 @@
     margin-right: 15px;
 }
 
-.nav-bar-control > div:first-child
+.nav-bar-newfolder
 {
     margin-top: -4px;
     margin-right: 20px;
 }
 
-.nav-bar-control > div:last-child
+.nav-bar-menu
 {
     margin-right: 0;
 }
 
-.nav-bar-control > div:nth-child(2)
+.nav-bar-theme
 {
     margin-top: -5px;
 }
 
-.nav-bar-control > div:first-child svg,
-.nav-bar-control > div:nth-child(2) svg
+.nav-bar-newfolder svg,
+.nav-bar-theme svg
 {
     width: 20px;
     height: 20px;

@@ -1,0 +1,81 @@
+.file-upload
+{
+	height: 50px;
+	width: 100%;
+	background: #f3f3f3;
+	color: #181818;
+	border-radius: 3px;
+	position: relative;
+	transition: 0.2s;
+	-webkit-box-shadow: 0px 1px 10px 1px rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: 0px 1px 10px 1px rgba(0, 0, 0, 0.2);
+	box-shadow: 0px 1px 10px 1px rgba(0, 0, 0, 0.2);
+}
+
+.file-upload-dark
+{
+	background: black;
+	color: white;
+}
+
+.file-upload-error
+{
+	background: #F19A9A;
+}
+
+.file-upload-error-dark
+{
+	background: #883939;
+}
+
+.file-upload > div
+{
+	height: 100%;
+	position: absolute;
+}
+
+.file-upload > div:first-child
+{
+	display: flex;
+	left: 0;
+	z-index: 1;
+}
+
+.file-upload > div:first-child > div
+{
+	padding: 10px;
+	line-height: 30px;
+}
+
+.file-upload-icon
+{
+	height: 30px;
+	width: 30px;
+}
+
+.file-upload-icon svg
+{
+	height: 100%;
+	width: 100%;
+}
+
+.file-upload > div:last-child
+{
+	background: white;
+	border-radius: 3px;
+}
+
+.file-upload-dark > div:last-child
+{
+	background: #2f2f2f;
+}
+
+.file-upload-error > div:last-child
+{
+	background: #FFAEAE;
+}
+
+.file-upload-error-dark > div:last-child
+{
+	background: #B15252;
+}
