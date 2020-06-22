@@ -6,11 +6,13 @@ import NavFolder from './NavFolder';
 import FolderClient 						from '../../api/FolderClient';
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { DirectoryContext } 		from '../../context/DirectoryContext';
+import { FileUploadContext }		from "../../context/FileUploadContext";
 
 import { ReactComponent as BurgerSvg } 		from "../../assets/icons/three-bars-menu.svg";
 import { ReactComponent as MoonSvg } 			from "../../assets/icons/moon.svg";
 import { ReactComponent as SunSvg } 			from "../../assets/icons/sun.svg";
 import { ReactComponent as FolderAddSvg } from "../../assets/icons/folder-add.svg";
+import { ReactComponent as UploadSvg } 		from "../../assets/icons/upload.svg";
 
 import { isLastById } from '../../utils/array.utils';
 
@@ -20,6 +22,7 @@ const NavBar = () =>
 {
 	const { folder }						= useContext(DirectoryContext);
 	const { theme, setTheme } 	= useContext(ThemeContext);
+	const { uploads }						= useContext(FileUploadContext);
 	const [folders, setFolders] = useState([]);
 
 	const folderClient = FolderClient.instance();
@@ -65,21 +68,30 @@ const NavBar = () =>
 				)}
 			</div>
 			<div className="nav-bar-control">
-				<div>
+				{
+					uploads.length > 0
+					&&
+					<div className="nav-bar-uploads">
+						<Link to="/file/upload">
+							<UploadSvg/>
+						</Link>
+					</div>
+				}
+				<div className="nav-bar-newfolder">
 					<Link to="/folder/create" replace>
 						<FolderAddSvg/>
 					</Link>
 				</div>
-				<div>
-					{
-						theme === Theme.LIGHT
-							?
-							<MoonSvg onClick={() => setTheme(Theme.DARK)} />
-							:
-							<SunSvg onClick={() => setTheme(Theme.LIGHT)} />
-					}
+				<div className="nav-bar-theme">
+				{
+					theme === Theme.LIGHT
+					?
+					<MoonSvg onClick={() => setTheme(Theme.DARK)} />
+					:
+					<SunSvg onClick={() => setTheme(Theme.LIGHT)} />
+				}
 				</div>
-				<div>
+				<div className="nav-bar-menu">
 					<BurgerSvg />
 				</div>
 			</div>
