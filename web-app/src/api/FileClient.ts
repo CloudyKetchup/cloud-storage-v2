@@ -21,12 +21,26 @@ class FileClient
     return FileClient.inst;
   }
 
-  upload = (formData: FormData, folderId: string) : Promise<ApiResponse<File>> =>
-  (
-  	axios.post(`${this.URL}/upload?folderId=${folderId}`, formData)
-  		.then(response => ({ data : response.data }))
+  upload = (
+    formData : FormData,
+    folderId : string,
+    progress?: (progress: string) => void
+  ) : Promise<ApiResponse<File>> =>
+  {
+    const onProgress = (p: any) =>
+    {
+      p && progress && progress(`${(p.total - (p.total - p.loaded)) / p.total * 100}`);
+    };
+
+    return axios({
+        url     : `${this.URL}/upload?folderId=${folderId}`,
+        method  : "POST",
+        data    : formData,
+        onUploadProgress : onProgress
+      })
+  		.then(response => ({ data : response.data.body }))
   		.catch(e => ({ error : e }))
-  );
+  };
 }
 
 export default FileClient;
