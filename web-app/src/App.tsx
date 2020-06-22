@@ -4,9 +4,11 @@ import { Router } from 'react-router';
 import MainLeftPanel  from './components/MainLeftPanel/MainLeftPanel';
 import Main           from './components/Main/Main';
 
-import { AppContext }       from './context/AppContext';
-import { DirectoryContext } from './context/DirectoryContext';
-import { ThemeProvider }    from './context/ThemeContext';
+import { AppContext }         from './context/AppContext';
+import { DirectoryContext }   from './context/DirectoryContext';
+import { ThemeProvider }      from './context/ThemeContext';
+import { FileUploadProvider } from "./context/FileUploadContext";
+import { FilesProvider }      from "./context/FilesContext";
 
 import FolderClient from './api/FolderClient';
 
@@ -38,8 +40,12 @@ const App = () =>
     <Router history={history}>
       <div className="App">
         <ThemeProvider>
-          <MainLeftPanel />
-          <Main />
+          <FileUploadProvider>
+            <FilesProvider>
+              <MainLeftPanel />
+              <Main />
+            </FilesProvider>
+          </FileUploadProvider>
         </ThemeProvider>
       </div>
     </Router>
