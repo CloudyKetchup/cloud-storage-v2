@@ -5,6 +5,10 @@ import FileClient from "../../api/FileClient";
 import { ThemeContext, Theme }  from "../../context/ThemeContext";
 import { DirectoryContext }     from "../../context/DirectoryContext";
 import { FilesContext }         from "../../context/FilesContext";
+import { FileUploadContext }    from "../../context/FileUploadContext";
+
+import { Guid }     from "guid-typescript";
+import { Subject }  from "rxjs";
 
 import { ReactComponent as UploadSvg } from "../../assets/icons/upload.svg";
 
@@ -17,10 +21,11 @@ type IProps = {
 
 const UploadButton: FC<IProps> = ({ className, style }) =>
 {
-  const { theme }   = useContext(ThemeContext);
-  const { folder }  = useContext(DirectoryContext);
-  const { addFile } = useContext(FilesContext);
-  const fileClient  = FileClient.instance();
+  const { theme }     = useContext(ThemeContext);
+  const { folder }    = useContext(DirectoryContext);
+  const { addFile }   = useContext(FilesContext);
+  const { addUpload } = useContext(FileUploadContext);
+  const fileClient    = FileClient.instance();
 
   const onClick = async () =>
   {
@@ -49,11 +54,36 @@ const UploadButton: FC<IProps> = ({ className, style }) =>
   {
     if (folder)
     {
-      const { data, error } = await fileClient.upload(formData, folder.id);
+      const file = formData.get("file") as File;
 
-      data && addFile(data);
+      const uploadFile = {
+        id        : Guid.create().toString(),
+        name      : file?.name,
+        progress  : "0",
+        onProgress: new Subject<string>(),
+        error     : false,
+        onError   : new Subject<boolean>(),
+        finished  : false
+      };
 
-      //TODO: error notification
+      addUpload(uploadFile);
+
+      const { data, error } = await fileClient.upload(formData, folder.id, p =>
+      {
+        uploadFile.progress = p;
+        uploadFile.onProgress.next(p)
+      });
+
+      uploadFile.finished = true;
+
+      if (data)
+      {
+        addFile(data)
+      } else if (error)
+      {
+        uploadFile.error = true;
+        uploadFile.onError.next(true)
+      }
     }
   };
 
