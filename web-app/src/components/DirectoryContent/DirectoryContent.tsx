@@ -46,7 +46,7 @@ const DirectoryContent: FC<IProps> = ({ folder }) =>
     };
 
     fetchItems();
-  }, []);
+  }, [folder]);
 
   return (
     <div className="directory-content">
