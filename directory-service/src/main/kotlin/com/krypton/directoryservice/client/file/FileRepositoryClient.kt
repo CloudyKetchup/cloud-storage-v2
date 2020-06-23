@@ -76,7 +76,7 @@ class FileRepositoryClient @Autowired constructor(private val repositoryClient: 
 		return try
 		{
 			val files = repositoryClient.get()
-				.uri("$uri/all?id=${folderId}")
+				.uri("$uri/all?folderId=${folderId}")
 				.retrieve()
 				.bodyToFlux(File::class.java)
 				.collectList()
