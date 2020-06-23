@@ -11,6 +11,7 @@
 
 .nav-bar > div:first-child
 {
+    display: flex;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -75,11 +76,6 @@
 {
     margin-left: 20px;
     margin-right: 20px;
-}
-
-.nav-folder:last-child
-{
-    padding-bottom: 4px;
 }
 
 .nav-folder-arrow
