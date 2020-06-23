@@ -1,14 +1,13 @@
-import React, { FC, useEffect, useState, useContext } from "react";
+import React, { FC, useEffect, useContext } from "react";
 
 import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
 
 import { Folder } 							from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { ContextMenuContext }		from "../../context/ContextMenuContext";
+import { DirectoryContext } 		from "../../context/DirectoryContext";
 
 import { ReactComponent as FolderSvg } 	from "../../assets/icons/folder.svg";
-import { ReactComponent as DotsSvg } 		from "../../assets/icons/vertical-dots.svg";
-import { ReactComponent as CloseSvg }		from "../../assets/icons/delete.svg";
 
 import "./folder-item.css";
 
@@ -16,6 +15,7 @@ type IProps = { data: Folder };
 
 const FolderItem: FC<IProps> = ({ data }) =>
 {
+	const { setFolder }					= useContext(DirectoryContext);
 	const { menuId, setMenuId } = useContext(ContextMenuContext);
 	const { theme } 						= useContext(ThemeContext);
 	const { id, name } 					= data;
@@ -95,6 +95,7 @@ const FolderItem: FC<IProps> = ({ data }) =>
 		<div
 			id={`folder-item-${id}`}
 			className={`folder-item ${ theme === Theme.DARK && "folder-item-dark" }`}
+			onClick={() => setFolder(data)}
 		>
 			{
 				menuId !== id
