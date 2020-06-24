@@ -4,6 +4,7 @@
 	padding-top: 0;
 	height: fill-available;
 	overflow-y: auto;
+	position: relative;
 }
 
 .items-view-header
@@ -28,4 +29,47 @@
 {
 	grid-auto-rows: 170px;
 	grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+}
+
+.clipboard-item
+{
+	display: flex;
+	height: 35px;
+	width: 35px;
+	background: white;
+	padding: 12px;
+	fill: #181818;
+	border-radius: 100px;
+	bottom: 20px;
+	right: 30px;
+	-webkit-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.15);
+	-moz-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.15);
+	box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.15);
+	animation-name: clipboard-item-fade;
+	animation-duration: 0.2s;
+	position: absolute;
+}
+
+.clipboard-item-dark
+{
+	background: #131313;
+	fill: white;
+}
+
+.clipboard-item svg
+{
+	height: 100%;
+	width: 100%;
+}
+
+@keyframes clipboard-item-fade
+{
+	from
+	{
+		opacity: 0;
+	}
+	to
+	{
+		opacity: 1;
+	}
 }
