@@ -6,6 +6,8 @@ import java.io.File
 
 interface IStorageFolderService : IStorageService
 {
+	suspend fun getZipFile(path: String): File?
+
 	suspend fun createFolder(path: String): File?
 
 	suspend fun rootStats(path: String): FolderUsageStats?

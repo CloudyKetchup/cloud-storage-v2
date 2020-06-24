@@ -2,9 +2,11 @@ package com.krypton.storageservice.service.storage.folder
 
 import com.krypton.storageservice.config.Storage
 import com.krypton.storageservice.model.FolderUsageStats
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.zeroturnaround.zip.ZipUtil
 import reactor.core.publisher.Mono
 import java.io.File
 import java.io.FileNotFoundException
@@ -100,5 +102,18 @@ class StorageFolderService @Autowired constructor(storage: Storage) : IStorageFo
 				total
 			)
 		} else null
+	}
+
+	override suspend fun getZipFile(path: String): File?
+	{
+		val file = File("$homeDir/$path")
+
+		if (!file.exists()) return null
+
+		val zip = Files.createTempFile(file.name, ".zip")
+
+		ZipUtil.pack(file, zip.toFile())
+
+		return zip.toFile()
 	}
 }
