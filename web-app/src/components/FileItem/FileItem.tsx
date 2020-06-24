@@ -5,6 +5,7 @@ import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/Con
 import { File } 								from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { ContextMenuContext }		from "../../context/ContextMenuContext";
+import { ClipboardContext, ClipbaordItemAction } 		from "../../context/ClipboardContext";
 
 import { ReactComponent as FileSvg } 			from "../../assets/icons/file.svg";
 import { ReactComponent as CalendarSvg } 	from "../../assets/icons/calendar.svg";
@@ -19,6 +20,7 @@ const FileItem: FC<IProps> = ({ data }) =>
 {
 	const { theme }							= useContext(ThemeContext);
 	const { menuId, setMenuId } = useContext(ContextMenuContext);
+	const { setItem } 					= useContext(ClipboardContext);
 	const { id, name, size, dateCreated, extension } = data;
 
 	useEffect(() =>
@@ -55,12 +57,12 @@ const FileItem: FC<IProps> = ({ data }) =>
 
 	const onCopy = async () =>
 	{
-		// TODO: implement
+		setItem({ body : data, action : ClipbaordItemAction.COPY });
 	};
 
 	const onCut = async () =>
 	{
-		// TODO: implement
+		setItem({ body : data, action : ClipbaordItemAction.MOVE });
 	};
 
 	const onTrash = async () =>

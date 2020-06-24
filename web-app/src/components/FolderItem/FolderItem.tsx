@@ -6,6 +6,7 @@ import { Folder } 							from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { ContextMenuContext }		from "../../context/ContextMenuContext";
 import { DirectoryContext } 		from "../../context/DirectoryContext";
+import { ClipboardContext, ClipbaordItemAction} from "../../context/ClipboardContext";
 
 import { ReactComponent as FolderSvg } 	from "../../assets/icons/folder.svg";
 
@@ -13,12 +14,13 @@ import "./folder-item.css";
 
 type IProps = { data: Folder };
 
-const FolderItem: FC<IProps> = ({ data }) =>
+const FolderItem: FC<IProps> = props =>
 {
-	const { setFolder }					= useContext(DirectoryContext);
-	const { menuId, setMenuId } = useContext(ContextMenuContext);
-	const { theme } 						= useContext(ThemeContext);
-	const { id, name } 					= data;
+	const { menuId, setMenuId }	= useContext(ContextMenuContext);
+	const { setFolder }	= useContext(DirectoryContext);
+	const { setItem } 	= useContext(ClipboardContext);
+	const { theme } 		= useContext(ThemeContext);
+	const { id, name } 	= props.data;
 
 	useEffect(() =>
 	{
@@ -54,12 +56,12 @@ const FolderItem: FC<IProps> = ({ data }) =>
 
 	const onCopy = () =>
 	{
-		// TODO: implement
+		setItem({ body : props.data, action : ClipbaordItemAction.COPY });
 	};
 
 	const onCut = () =>
 	{
-		// TODO: implement
+		setItem({ body : props.data, action : ClipbaordItemAction.MOVE });
 	};
 
 	const onTrash = () =>
@@ -73,11 +75,11 @@ const FolderItem: FC<IProps> = ({ data }) =>
 	};
 
 	const actions: ContextMenuActions = {
-		onDownload : onDownload,
-		onCut 	: onCut,
-		onCopy	: onCopy,
-		onTrash : onTrash,
-		onDelete: onDelete
+		onDownload 	: onDownload,
+		onCut 			: onCut,
+		onCopy			: onCopy,
+		onTrash 		: onTrash,
+		onDelete		: onDelete
 	};
 
 	const toggleMenu = () =>
@@ -95,7 +97,7 @@ const FolderItem: FC<IProps> = ({ data }) =>
 		<div
 			id={`folder-item-${id}`}
 			className={`folder-item ${ theme === Theme.DARK && "folder-item-dark" }`}
-			onClick={() => setFolder(data)}
+			onDoubleClick={() => setFolder(props.data)}
 		>
 			{
 				menuId !== id
