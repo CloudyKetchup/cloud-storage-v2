@@ -6,6 +6,7 @@ import { DirectoryContent } from "../models/DirectoryContent";
 import { ApiResponse }      from "../models/ApiResponse";
 
 import axios from "axios";
+import { FolderMoveData } from "../models/MoveData";
 
 class FolderClient
 {
@@ -54,6 +55,17 @@ class FolderClient
   create = (folder: Folder, folderName: string) : Promise<ApiResponse<Folder>> =>
   (
     axios.post(`${this.URL}/create?name=${folderName}`, folder)
+      .then(response => ({ data : response.data }))
+      .catch(e => ({ error : e }))
+  );
+
+  copy = (moveData: FolderMoveData) => this.moveRequest(moveData, "copy");
+
+  move = (moveData: FolderMoveData) => this.moveRequest(moveData, "move");
+
+  private moveRequest = (moveData: FolderMoveData, path: string) : Promise<ApiResponse<Folder>> =>
+  (
+    axios.put(`${this.URL}/${path}`, moveData)
       .then(response => ({ data : response.data }))
       .catch(e => ({ error : e }))
   );

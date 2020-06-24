@@ -4,6 +4,7 @@ import axios from "axios";
 
 import { File }					from "../models/Directory";
 import { ApiResponse }	from "../models/ApiResponse";
+import { FileMoveData } from "../models/MoveData";
 
 class FileClient
 {
@@ -41,6 +42,17 @@ class FileClient
   		.then(response => ({ data : response.data.body }))
   		.catch(e => ({ error : e }))
   };
+
+  copy = (moveData: FileMoveData) => this.moveRequest(moveData, "copy");
+
+  move = (moveData: FileMoveData) => this.moveRequest(moveData, "move");
+
+  private moveRequest = (moveData: FileMoveData, path: string): Promise<ApiResponse<File>> =>
+  (
+    axios.put(`${this.URL}/${path}`, moveData)
+      .then(response => ({ data : response.data }))
+      .catch(e => ({ error : e }))
+  );
 }
 
 export default FileClient;
