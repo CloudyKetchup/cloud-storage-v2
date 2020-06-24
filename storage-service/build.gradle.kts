@@ -19,6 +19,7 @@ extra["springCloudVersion"] = "Hoxton.SR4"
 
 dependencies {
 	implementation(files("../common-models/build/libs/common-models.jar"))
+	implementation("org.zeroturnaround:zt-zip:1.14")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
