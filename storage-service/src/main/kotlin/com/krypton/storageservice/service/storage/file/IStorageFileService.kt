@@ -6,5 +6,7 @@ import java.io.File
 
 interface IStorageFileService : IStorageService
 {
+	suspend fun getFile(path: String): File?
+
 	suspend fun saveFromFilePart(filePart: FilePart, path: String): File?
 }

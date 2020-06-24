@@ -196,7 +196,7 @@ class FolderHandler @Autowired constructor(
 		return if (folder != null)
 			helper.download(folder)
 		else
-			badRequest().buildAndAwait()
+			notFound().buildAndAwait()
 	}
 }
 
