@@ -4,10 +4,12 @@ import { CompactSeparator } from "../CompactSeparator/CompactSeparator";
 import EmptyDirectory				from "../EmptyDirectory/EmptyDirectory";
 import FolderItem 					from "../FolderItem/FolderItem";
 import FileItem 						from "../FileItem/FileItem";
+import Clipboard						from "./Clipboard";
 
 import { FilesContext } 				from "../../context/FilesContext";
 import { FoldersContext } 			from "../../context/FoldersContext";
 import { ContextMenuProvider } 	from "../../context/ContextMenuContext";
+import { ClipboardContext  } 		from "../../context/ClipboardContext";
 
 import "./directory-items.css";
 
@@ -23,6 +25,7 @@ const DirectoryItems = () =>
 {
 	const { files } 	= useContext(FilesContext);
 	const { folders } = useContext(FoldersContext);
+	const { item }  	= useContext(ClipboardContext);
 
 	return (
 		<>
@@ -64,6 +67,7 @@ const DirectoryItems = () =>
 					</ContextMenuProvider>
 				</div>
 			}
+			{item && <Clipboard item={item}/>}
 		</>
 	);
 };
