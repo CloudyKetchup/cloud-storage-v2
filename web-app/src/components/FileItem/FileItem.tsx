@@ -2,14 +2,19 @@ import React, { FC, useContext, useEffect } from "react";
 
 import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
 
+import { API_URL } 							from "../../api/env.config";
+import FileClient 							from "../../api/FileClient";
 import { File } 								from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { ContextMenuContext }		from "../../context/ContextMenuContext";
+import { FilesContext } 				from "../../context/FilesContext";
+import { ClipboardContext, ClipbaordItemAction } 		from "../../context/ClipboardContext";
 
 import { ReactComponent as FileSvg } 			from "../../assets/icons/file.svg";
 import { ReactComponent as CalendarSvg } 	from "../../assets/icons/calendar.svg";
 
 import { formatSize } from "../../utils/directory.format.utils";
+
 
 import "./file-item.css";
 
@@ -19,7 +24,10 @@ const FileItem: FC<IProps> = ({ data }) =>
 {
 	const { theme }							= useContext(ThemeContext);
 	const { menuId, setMenuId } = useContext(ContextMenuContext);
-	const { id, name, size, dateCreated, extension } = data;
+	const { setItem } 					= useContext(ClipboardContext);
+	const { deleteFile } 				= useContext(FilesContext);
+	const { id, name, path, size, dateCreated, extension } = data;
+	const fileClient						= FileClient.instance();
 
 	useEffect(() =>
 	{
@@ -50,17 +58,27 @@ const FileItem: FC<IProps> = ({ data }) =>
 
 	const onDownload = async () =>
 	{
-		// TODO: implement
+		const link = document.createElement("a");
+		
+		link.href = `${API_URL}/file/download?path=${path.replace(/[/]/g, '%2F')}`;
+
+		link.download = name;
+
+		document.body.appendChild(link);
+		
+		link.click();
+
+		document.body.removeChild(link);
 	};
 
 	const onCopy = async () =>
 	{
-		// TODO: implement
+		setItem({ body : data, action : ClipbaordItemAction.COPY });
 	};
 
 	const onCut = async () =>
 	{
-		// TODO: implement
+		setItem({ body : data, action : ClipbaordItemAction.MOVE });
 	};
 
 	const onTrash = async () =>
@@ -70,7 +88,9 @@ const FileItem: FC<IProps> = ({ data }) =>
 
 	const onDelete = async () =>
 	{
-		// TODO: implement
+		const { status } = await fileClient.remove(data);
+
+		status === 200 && deleteFile(id);
 	};
 
 	const toggleMenu = () => setMenuId(menuId === id ? "" : id);

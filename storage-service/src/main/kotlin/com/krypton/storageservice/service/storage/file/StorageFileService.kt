@@ -19,6 +19,13 @@ class StorageFileService @Autowired constructor(storage: Storage): IStorageFileS
 {
 	private val homeDir = storage.homeDir
 
+	override suspend fun getFile(path: String): File?
+	{
+		val file = File("$homeDir/$path")
+
+		return if (file.exists()) file else null
+	}
+
 	override suspend fun saveFromFilePart(filePart: FilePart, path: String): File?
 	{
 		val file = File("${homeDir}/$path")

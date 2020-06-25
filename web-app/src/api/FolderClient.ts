@@ -3,9 +3,10 @@ import { API_URL } from "./env.config";
 import { StorageStats }     from "../models/StorageStats";
 import { Folder }           from "../models/Directory";
 import { DirectoryContent } from "../models/DirectoryContent";
-import { ApiResponse }      from "../models/ApiResponse";
+import { ApiResponse, StatusResponse } from "../models/ApiResponse";
 
 import axios from "axios";
+import { FolderMoveData } from "../models/MoveData";
 
 class FolderClient
 {
@@ -57,6 +58,24 @@ class FolderClient
       .then(response => ({ data : response.data }))
       .catch(e => ({ error : e }))
   );
+
+  copy = (moveData: FolderMoveData) => this.moveRequest(moveData, "copy");
+
+  move = (moveData: FolderMoveData) => this.moveRequest(moveData, "move");
+
+  private moveRequest = (moveData: FolderMoveData, path: string) : Promise<ApiResponse<Folder>> =>
+  (
+    axios.put(`${this.URL}/${path}`, moveData)
+      .then(response => ({ data : response.data }))
+      .catch(e => ({ error : e }))
+  );
+
+	remove = (id: string) : Promise<StatusResponse> =>
+	(
+		axios.delete(`${this.URL}/delete?id=${id}`)
+			.then(response => ({ status : response.status }))
+			.catch(e => ({ error : e }))
+	);
 }
 
 export default FolderClient;

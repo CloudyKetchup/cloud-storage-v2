@@ -4,3 +4,8 @@ export type ApiResponse<T> = {
   data?  : T,
   error? : AxiosError
 };
+
+export type StatusResponse = {
+	status?: number,
+	error? : AxiosError
+};
