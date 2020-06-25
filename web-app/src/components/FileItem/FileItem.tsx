@@ -2,6 +2,7 @@ import React, { FC, useContext, useEffect } from "react";
 
 import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
 
+import { API_URL } 							from "../../api/env.config";
 import { File } 								from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { ContextMenuContext }		from "../../context/ContextMenuContext";
@@ -12,6 +13,7 @@ import { ReactComponent as CalendarSvg } 	from "../../assets/icons/calendar.svg"
 
 import { formatSize } from "../../utils/directory.format.utils";
 
+
 import "./file-item.css";
 
 type IProps = { data : File };
@@ -21,7 +23,7 @@ const FileItem: FC<IProps> = ({ data }) =>
 	const { theme }							= useContext(ThemeContext);
 	const { menuId, setMenuId } = useContext(ContextMenuContext);
 	const { setItem } 					= useContext(ClipboardContext);
-	const { id, name, size, dateCreated, extension } = data;
+	const { id, name, path, size, dateCreated, extension } = data;
 
 	useEffect(() =>
 	{
@@ -52,7 +54,17 @@ const FileItem: FC<IProps> = ({ data }) =>
 
 	const onDownload = async () =>
 	{
-		// TODO: implement
+		const link = document.createElement("a");
+		
+		link.href = `${API_URL}/file/download?path=${path.replace(/[/]/g, '%2F')}`;
+
+		link.download = name;
+
+		document.body.appendChild(link);
+		
+		link.click();
+
+		document.body.removeChild(link);
 	};
 
 	const onCopy = async () =>

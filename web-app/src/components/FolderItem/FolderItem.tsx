@@ -2,6 +2,7 @@ import React, { FC, useEffect, useContext } from "react";
 
 import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
 
+import { API_URL } 							from "../../api/env.config";
 import { Folder } 							from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { ContextMenuContext }		from "../../context/ContextMenuContext";
@@ -17,10 +18,10 @@ type IProps = { data: Folder };
 const FolderItem: FC<IProps> = props =>
 {
 	const { menuId, setMenuId }	= useContext(ContextMenuContext);
-	const { setFolder }	= useContext(DirectoryContext);
-	const { setItem } 	= useContext(ClipboardContext);
-	const { theme } 		= useContext(ThemeContext);
-	const { id, name } 	= props.data;
+	const { setFolder }					= useContext(DirectoryContext);
+	const { setItem } 					= useContext(ClipboardContext);
+	const { theme } 						= useContext(ThemeContext);
+	const { id, name, path } 		= props.data;
 
 	useEffect(() =>
 	{
@@ -51,7 +52,17 @@ const FolderItem: FC<IProps> = props =>
 
 	const onDownload = () =>
 	{
-		// TODO: implement
+		const link = document.createElement("a");
+		
+		link.href = `${API_URL}/folder/download?path=${path.replace(/[/]/g, '%2F')}`;
+
+		link.download = name;
+
+		document.body.appendChild(link);
+		
+		link.click();
+
+		document.body.removeChild(link);
 	};
 
 	const onCopy = () =>
