@@ -7,7 +7,9 @@ import com.krypton.storageservice.service.storage.file.IStorageFileService
 import common.models.File
 import common.models.Folder
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -98,15 +100,15 @@ class FileHandler @Autowired constructor(private val helper: FileHandlerHelper)
 	/**
 	 * Download file
 	 *
-	 * @param request	incoming request with [File] body
+	 * @param request	incoming request with "path" query param
 	 * @return response with file byte array or http error status
 	 * */
 	suspend fun download(request: ServerRequest): ServerResponse
 	{
-		val file = request.awaitBodyOrNull<File>()
+		val path = request.queryParam("path")
 
-		return if (file != null)
-			helper.download(file)
+		return if (path.isPresent)
+			helper.download(path.get())
 		else
 			badRequest().buildAndAwait()
 	}
@@ -252,15 +254,17 @@ class FileHandlerHelper(private val storageFileService: IStorageFileService)
 	/**
 	 * Download file
 	 *
-	 * @param file		[File]
+	 * @param path		path to file
 	 * @return byte array response or not found
 	 * */
-	suspend fun download(file: File): ServerResponse
+	suspend fun download(path: String): ServerResponse
 	{
-		val fsFile = storageFileService.getFile(file.path)
+		val fsFile = storageFileService.getFile(path)
 
 		return if (fsFile != null)
-			ok().bodyValueAndAwait(fsFile.readBytes())
+			ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=${fsFile.name}")
+				.contentType(MediaType.APPLICATION_OCTET_STREAM)
+				.bodyValueAndAwait(fsFile.readBytes())
 		else
 			notFound().buildAndAwait()
 	}

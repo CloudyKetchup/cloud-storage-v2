@@ -9,8 +9,10 @@ import com.krypton.storageservice.service.storage.folder.IFolderDataService
 import com.krypton.storageservice.service.storage.folder.IStorageFolderService
 import common.models.Folder
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.FOUND
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.reactive.function.server.ServerResponse.*
@@ -186,15 +188,15 @@ class FolderHandler @Autowired constructor(
 	/**
 	 * Download folder as zip
 	 *
-	 * @param request	incoming request with [Folder] body
+	 * @param request	incoming request with "path" query param
 	 * @return byte array response or bad request if body not present
 	 * */
 	suspend fun download(request: ServerRequest): ServerResponse
 	{
-		val folder = request.awaitBodyOrNull<Folder>()
+		val path = request.queryParam("path")
 
-		return if (folder != null)
-			helper.download(folder)
+		return if (path.isPresent)
+			helper.download(path.get())
 		else
 			notFound().buildAndAwait()
 	}
@@ -340,16 +342,21 @@ class FolderHandlerHelper @Autowired constructor(
 	/**
 	 * Download folder as zip folder
 	 *
-	 * @param folder	[Folder]
+	 * @param path		path to folder
 	 * @return response of file byte array or http status error
 	 * */
-	suspend fun download(folder: Folder): ServerResponse
+	suspend fun download(path: String): ServerResponse
 	{
-		val zip = storageService.getZipFile(folder.path)
+		val zip = storageService.getZipFile(path)
 
 		return if (zip != null)
-			ok().bodyValueAndAwait(zip.readBytes())
-		else
+		{
+			val returnName = path.substringAfterLast("/")
+
+			ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=${returnName}.zip")
+				.contentType(MediaType.APPLICATION_OCTET_STREAM)
+				.bodyValueAndAwait(zip.readBytes())
+		} else
 			status(INTERNAL_SERVER_ERROR).buildAndAwait()
 	}
 
