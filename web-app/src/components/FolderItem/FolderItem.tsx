@@ -3,10 +3,12 @@ import React, { FC, useEffect, useContext } from "react";
 import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
 
 import { API_URL } 							from "../../api/env.config";
+import FolderClient 						from "../../api/FolderClient";
 import { Folder } 							from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { ContextMenuContext }		from "../../context/ContextMenuContext";
 import { DirectoryContext } 		from "../../context/DirectoryContext";
+import { FoldersContext }				from "../../context/FoldersContext";
 import { ClipboardContext, ClipbaordItemAction} from "../../context/ClipboardContext";
 
 import { ReactComponent as FolderSvg } 	from "../../assets/icons/folder.svg";
@@ -21,7 +23,9 @@ const FolderItem: FC<IProps> = props =>
 	const { setFolder }					= useContext(DirectoryContext);
 	const { setItem } 					= useContext(ClipboardContext);
 	const { theme } 						= useContext(ThemeContext);
+	const { deleteFolder } 			= useContext(FoldersContext);
 	const { id, name, path } 		= props.data;
+	const folderClient 					= FolderClient.instance();
 
 	useEffect(() =>
 	{
@@ -80,9 +84,11 @@ const FolderItem: FC<IProps> = props =>
 		// TODO: implement
 	};
 
-	const onDelete = () =>
+	const onDelete = async () =>
 	{
-		// TODO: implement
+		const { status } = await folderClient.remove(id);
+
+		status === 200 && deleteFolder(id);
 	};
 
 	const actions: ContextMenuActions = {

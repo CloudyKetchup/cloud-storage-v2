@@ -3,9 +3,11 @@ import React, { FC, useContext, useEffect } from "react";
 import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
 
 import { API_URL } 							from "../../api/env.config";
+import FileClient 							from "../../api/FileClient";
 import { File } 								from "../../models/Directory";
 import { ThemeContext, Theme } 	from "../../context/ThemeContext";
 import { ContextMenuContext }		from "../../context/ContextMenuContext";
+import { FilesContext } 				from "../../context/FilesContext";
 import { ClipboardContext, ClipbaordItemAction } 		from "../../context/ClipboardContext";
 
 import { ReactComponent as FileSvg } 			from "../../assets/icons/file.svg";
@@ -23,7 +25,9 @@ const FileItem: FC<IProps> = ({ data }) =>
 	const { theme }							= useContext(ThemeContext);
 	const { menuId, setMenuId } = useContext(ContextMenuContext);
 	const { setItem } 					= useContext(ClipboardContext);
+	const { deleteFile } 				= useContext(FilesContext);
 	const { id, name, path, size, dateCreated, extension } = data;
+	const fileClient						= FileClient.instance();
 
 	useEffect(() =>
 	{
@@ -84,7 +88,9 @@ const FileItem: FC<IProps> = ({ data }) =>
 
 	const onDelete = async () =>
 	{
-		// TODO: implement
+		const { status } = await fileClient.remove(data);
+
+		status === 200 && deleteFile(id);
 	};
 
 	const toggleMenu = () => setMenuId(menuId === id ? "" : id);
