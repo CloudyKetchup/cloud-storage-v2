@@ -3,8 +3,8 @@ import { API_URL } from "./env.config";
 import axios from "axios";
 
 import { File }					from "../models/Directory";
-import { ApiResponse }	from "../models/ApiResponse";
 import { FileMoveData } from "../models/MoveData";
+import { ApiResponse, StatusResponse } from "../models/ApiResponse";
 
 class FileClient
 {
@@ -20,7 +20,7 @@ class FileClient
       FileClient.inst = new FileClient();
     }
     return FileClient.inst;
-  }
+  };
 
   upload = (
     formData : FormData,
@@ -42,8 +42,8 @@ class FileClient
   		.then(response => ({ data : response.data.body }))
   		.catch(e => ({ error : e }))
   };
-
-  copy = (moveData: FileMoveData) => this.moveRequest(moveData, "copy");
+	
+	copy = (moveData: FileMoveData) => this.moveRequest(moveData, "copy");
 
   move = (moveData: FileMoveData) => this.moveRequest(moveData, "move");
 
@@ -53,6 +53,17 @@ class FileClient
       .then(response => ({ data : response.data }))
       .catch(e => ({ error : e }))
   );
+
+	remove = (file: File) : Promise<StatusResponse> =>
+	(
+		axios({
+			url : `${this.URL}/delete`,
+			method : "DELETE",
+			data : file
+		})
+			.then(response => ({ status : response.status }))
+			.catch(e => ({ error : e }))
+	);
 }
 
 export default FileClient;
