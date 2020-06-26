@@ -18,7 +18,7 @@ import './App.css';
 
 const App = () =>
 {
-  const { setLoading, setErrorLoadingApp } = useContext(AppContext);
+  const { setLoading, setErrorLoadingApp, setRootFolder } = useContext(AppContext);
   const { setFolder } = useContext(DirectoryContext);
   const folderClient  = FolderClient.instance();
 
@@ -30,7 +30,11 @@ const App = () =>
 
       setLoading(false);
 
-      data ? setFolder(data) : setErrorLoadingApp(error !== null);
+      if (data)
+      {
+        setFolder(data)
+        setRootFolder(data);
+      } else setErrorLoadingApp(error !== null);
     };
 
     fetchRoot();
