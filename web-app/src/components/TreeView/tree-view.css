@@ -1,0 +1,37 @@
+.tree-view
+{
+  padding-left: 20px;
+}
+
+.tree-view > div
+{
+  margin-top: 20px;
+  margin-bottom: 20px;
+  transition: 0.2s;
+}
+
+.tree-view > .file-tree-item,
+.tree-view > .folder-tree-item
+{
+  cursor: pointer;
+  border-radius: 5px;
+  -webkit-box-shadow: 0px 5px 15px -6px rgba(0,0,0,0.25);
+  -moz-box-shadow: 0px 5px 15px -6px rgba(0,0,0,0.25);
+  box-shadow: 0px 5px 15px -6px rgba(0,0,0,0.25);
+  animation-name: tree-view-item-slide;
+  animation-duration: 0.2s;
+}
+
+@keyframes tree-view-item-slide
+{
+  from
+  {
+    opacity: 0;
+    margin-top: -20px;
+  }
+  to
+  {
+    margin-top: unset;
+    opacity: 1;
+  }
+}
