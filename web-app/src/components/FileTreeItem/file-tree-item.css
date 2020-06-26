@@ -1,0 +1,30 @@
+.file-tree-item
+{
+  display: flex;
+  background: white;
+  color: #181818;
+  fill: gray;
+  width: 220px;
+  height: 45px;
+  line-height: 45px;
+}
+
+.file-tree-item-dark
+{
+  background: #181818;
+  color: white;
+}
+
+.file-tree-item > div:first-child
+{
+  width: 30px;
+  height: 20px;
+  margin-left: 5px;
+  padding: 5px;
+}
+
+.file-tree-item svg
+{
+  height: 100%;
+  width: 100%;
+}
