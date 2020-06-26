@@ -1,6 +1,14 @@
 import React, { FC, CSSProperties, useContext } from "react";
 
-import { ThemeContext, Theme } from "../../context/ThemeContext";
+import FileClient from "../../api/FileClient";
+
+import { ThemeContext, Theme }  from "../../context/ThemeContext";
+import { DirectoryContext }     from "../../context/DirectoryContext";
+import { FilesContext }         from "../../context/FilesContext";
+import { FileUploadContext }    from "../../context/FileUploadContext";
+
+import { Guid }     from "guid-typescript";
+import { Subject }  from "rxjs";
 
 import { ReactComponent as UploadSvg } from "../../assets/icons/upload.svg";
 
@@ -13,7 +21,11 @@ type IProps = {
 
 const UploadButton: FC<IProps> = ({ className, style }) =>
 {
-  const { theme } = useContext(ThemeContext);
+  const { theme }     = useContext(ThemeContext);
+  const { folder }    = useContext(DirectoryContext);
+  const { addFile }   = useContext(FilesContext);
+  const { addUpload } = useContext(FileUploadContext);
+  const fileClient    = FileClient.instance();
 
   const onClick = async () =>
   {
@@ -22,7 +34,7 @@ const UploadButton: FC<IProps> = ({ className, style }) =>
     input.click()
   };
 
-  const upload = async () =>
+  const onUpload = async () =>
   {
     const input = document.getElementById("file-upload-input") as HTMLInputElement;
 
@@ -34,7 +46,44 @@ const UploadButton: FC<IProps> = ({ className, style }) =>
 
       formData.append("file", file);
 
-      // TODO: upload
+      await upload(formData);
+    }
+  };
+
+  const upload = async (formData: FormData) =>
+  {
+    if (folder)
+    {
+      const file = formData.get("file") as File;
+
+      const uploadFile = {
+        id        : Guid.create().toString(),
+        name      : file?.name,
+        progress  : "0",
+        onProgress: new Subject<string>(),
+        error     : false,
+        onError   : new Subject<boolean>(),
+        finished  : false
+      };
+
+      addUpload(uploadFile);
+
+      const { data, error } = await fileClient.upload(formData, folder.id, p =>
+      {
+        uploadFile.progress = p;
+        uploadFile.onProgress.next(p)
+      });
+
+      uploadFile.finished = true;
+
+      if (data)
+      {
+        addFile(data)
+      } else if (error)
+      {
+        uploadFile.error = true;
+        uploadFile.onError.next(true)
+      }
     }
   };
 
@@ -58,7 +107,7 @@ const UploadButton: FC<IProps> = ({ className, style }) =>
         id="file-upload-input"
         style={{ display: "none" }}
         type="file"
-        onChange={upload}
+        onChange={onUpload}
       />
       <button
         id="upload-button"

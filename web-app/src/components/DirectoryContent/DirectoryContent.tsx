@@ -2,13 +2,14 @@ import React, { useContext, useEffect, useState, FC } from "react";
 
 import FetchErrorBanner from "../FetchErrorBanner/FetchErrorBanner";
 import Loading          from "../LoadingComponent/LoadingComponent";
+import DirectoryItems   from "../DirectoryItems/DirectoryItems";
 
-import { Folder } from "../../models/Directory";
+import FolderClient         from "../../api/FolderClient";
+import { Folder }           from "../../models/Directory";
 
-import { FilesContext }     from "../../context/FilesContext";
-import { FoldersContext }   from "../../context/FoldersContext";
-
-import FolderClient from "../../api/FolderClient";
+import { FilesContext }       from "../../context/FilesContext";
+import { FoldersContext }     from "../../context/FoldersContext";
+import { ClipboardProvider }  from "../../context/ClipboardContext";
 
 import "./directory-content.css";
 
@@ -32,7 +33,13 @@ const DirectoryContent: FC<IProps> = ({ folder }) =>
     {
       setLoading(true);
 
+<<<<<<< HEAD
+      const { data, error } = await folderClient.getContent(folder.id);
+      
+      setLoading(false);
+=======
       const content = await folderClient.getContent(folder.id, onFetchError);
+>>>>>>> master
 
       if (content)
       {
@@ -43,18 +50,20 @@ const DirectoryContent: FC<IProps> = ({ folder }) =>
     };
 
     fetchItems();
-  }, []);
+  }, [folder]);
 
   return (
     <div className="directory-content">
-      <Loading
-        loading={loading}
-        error={error}
-        fallback={<FetchErrorBanner text="Failed fetching folder content" height="calc(100% - 20px)"/>}
-        style={{ height : "calc(100% - 20px)" }}
-      >
-          {/* // TODO: render files and folders here */}
-      </Loading>
+      <ClipboardProvider>
+        <Loading
+          loading={loading}
+          error={error}
+          fallback={<FetchErrorBanner text="Failed fetching folder content" height="calc(100% - 90px)" />}
+          style={{ height: "calc(100% - 90px)" }}
+        >
+          <DirectoryItems />
+        </Loading>
+      </ClipboardProvider>
     </div>
   );
 };

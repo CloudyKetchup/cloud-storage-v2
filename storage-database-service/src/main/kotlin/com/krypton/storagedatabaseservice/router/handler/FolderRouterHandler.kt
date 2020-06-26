@@ -1,9 +1,11 @@
 package com.krypton.storagedatabaseservice.router.handler
 
+import com.krypton.storagedatabaseservice.model.DirectoryTree
 import com.krypton.storagedatabaseservice.service.file.IFileService
 import com.krypton.storagedatabaseservice.service.folder.FolderService
 import common.models.File
 import common.models.Folder
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
@@ -148,12 +150,34 @@ class FolderHandler @Autowired constructor(
 			badRequest().buildAndAwait()
 	}
 
+	/**
+	 * Get all directory tree data, folders and files
+	 *
+	 * @param request	incoming request with "id" query param
+	 * @return [DirectoryTree] or error http status
+	 * */
 	suspend fun getTree(request: ServerRequest): ServerResponse
 	{
-		val folder = request.queryParam("id")
+		val id = request.queryParam("id")
 
-		return if (folder.isPresent)
-			helper.getTree(folder.get())
+		return if (id.isPresent)
+			helper.byIdFolderAction(id.get(), helper::getTree)
+		else
+			badRequest().buildAndAwait()
+	}
+
+	/**
+	 * Get all previous folders of an folder
+	 *
+	 * @param request	icoming request with "id" query param
+	 * @return list of [Folder]'s or error http status
+	 * */
+	suspend fun getPreviousFolders(request: ServerRequest): ServerResponse
+	{
+		val id = request.queryParam("id")
+
+		return if (id.isPresent)
+			helper.byIdFolderAction(id.get(), helper::getPreviousFolders)
 		else
 			badRequest().buildAndAwait()
 	}
@@ -170,12 +194,6 @@ class FolderHandlerHelper @Autowired constructor(
 	private val fileService: IFileService
 )
 {
-	data class DirectoryTree(
-		val data	: Folder,
-		val folders	: ArrayList<DirectoryTree>,
-		val files	: ArrayList<File>
-	)
-
 	/**
 	 * Save folder to repository
 	 *
@@ -300,13 +318,16 @@ class FolderHandlerHelper @Autowired constructor(
 	 * @param id	parent folder id
 	 * @return [DirectoryTree]
 	 * */
-	suspend fun getTree(id: String): ServerResponse
+	suspend fun <T> byIdFolderAction(
+		id: String,
+		action: suspend (folder: Folder) -> T
+	): ServerResponse
 	{
 		val folder = folderService.findById(id)
 
 		if (folder != null)
 		{
-			return ok().bodyValueAndAwait(getTree(folder))
+			return ok().bodyValueAndAwait(action(folder)!!)
 		}
 		return notFound().buildAndAwait()
 	}
@@ -317,15 +338,43 @@ class FolderHandlerHelper @Autowired constructor(
 	 * @param folder	folder from which get tree
 	 * @return [DirectoryTree]
 	 * */
-	private suspend fun getTree(folder: Folder) : DirectoryTree = coroutineScope {
+	suspend fun getTree(folder: Folder) : DirectoryTree = coroutineScope {
 		val tree = DirectoryTree(folder, arrayListOf(), arrayListOf())
 
-		val populateFiles 	= async { fileService.findByFolder(folder.id).toList(tree.files) }
-		val getFolders 		= async { folderService.findByFolder(folder.id) }
+		val populateFiles 	= async(IO) { fileService.findByFolder(folder.id).toList(tree.files) }
+		val getFolders 		= async(IO) { folderService.findByFolder(folder.id) }
 
 		getFolders.await().map { getTree(it) }.toList(tree.folders)
 		populateFiles.await()
 		return@coroutineScope tree
+	}
+
+	/**
+	 * Get all previous folders of an folder,
+	 * list will start from the root to the folder
+	 *
+	 * @param folder	target folder
+	 * @return list of [Folder]'s
+	 * */
+	suspend fun getPreviousFolders(folder: Folder): List<Folder>
+	{
+		val folders = arrayListOf(folder)
+
+		suspend fun addPreviousToList(list: ArrayList<Folder>, folder: Folder)
+		{
+			val previous = folderService.findById(folder.folder)
+
+			if (previous != null)
+			{
+				list.add(previous)
+
+				addPreviousToList(list, previous)
+			}
+		}
+
+		addPreviousToList(folders, folder)
+
+		return folders.reversed()
 	}
 
 	/**

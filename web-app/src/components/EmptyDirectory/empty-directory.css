@@ -1,0 +1,40 @@
+.empty-directory
+{
+	height: 100%;
+	margin: auto;
+	position: relative;
+}
+
+.empty-directory-content
+{
+	height: 100px;
+	width: 100%;
+	display: block;
+	text-align: center;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	margin-top: 150px;
+	position: absolute;
+}
+
+.empty-directory-content svg
+{
+	height: 100%;
+	width: 100%;
+	fill: gray;
+}
+
+.empty-directory-content > div:first-child
+{
+	margin: auto;
+	height: 100px;
+	width: 100px;
+}
+
+.empty-directory-content > div:last-child
+{
+
+}

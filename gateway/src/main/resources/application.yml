@@ -1,17 +1,19 @@
 spring:
   cloud:
     gateway:
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins: "*"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - OPTIONS
-              - DELETE
       routes:
+        - id: folder-previous-folders
+          uri: lb://STORAGE-DATABASE-SERVICE/
+          predicates:
+            - Path=/folder/previous/folders/**
+        - id: folder-download
+          uri: lb://STORAGE-SERVICE/
+          predicates:
+            - Path=/folder/download
+        - id: file-download
+          uri: lb://STORAGE-SERVICE/
+          predicates:
+            - Path=/file/download
         - id: directory-service-folder-endpoint
           uri: lb://DIRECTORY-SERVICE/
           predicates:

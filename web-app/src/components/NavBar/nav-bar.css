@@ -1,0 +1,86 @@
+.nav-bar
+{
+    display: flex;
+    width: calc(100vw-300px);
+    height: 70px;
+    background-color: burlywood;
+    align-items: center;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+.nav-bar > div:first-child
+{
+    display: flex;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.nav-bar-control
+{
+    display: flex;
+    width: fit-content;
+    margin-left: auto;
+}
+
+.nav-bar-control > div
+{
+    height: 15px;
+    width: 15px;
+    cursor: pointer;
+}
+
+.nav-bar-control > div
+{
+    margin-top: -2px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.nav-bar-newfolder
+{
+    margin-top: -4px;
+    margin-right: 20px;
+}
+
+.nav-bar-menu
+{
+    margin-right: 0;
+}
+
+.nav-bar-theme
+{
+    margin-top: -5px;
+}
+
+.nav-bar-newfolder svg,
+.nav-bar-theme svg
+{
+    width: 20px;
+    height: 20px;
+}
+
+.nav-bar-control svg
+{
+    height: 100%;
+    width: 100%;
+}
+
+.nav-folder
+{
+    display: flex;
+    align-items: center;
+}
+
+.nav-folder > div:last-child
+{
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.nav-folder-arrow
+{
+    width: 15px;
+    height: 15px;
+    display: block;
+}

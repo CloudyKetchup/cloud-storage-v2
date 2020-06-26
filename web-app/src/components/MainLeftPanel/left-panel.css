@@ -1,8 +1,16 @@
 .main-left-panel
 {
+  background: #dedede;
+  color: #181818;
   float: left;
   height: 100%;
   width: 300px;
+}
+
+.main-left-panel-dark
+{
+  background: rgb(35, 35, 35);
+  color: #dedede;
 }
 
 .main-left-panel > div
@@ -16,11 +24,6 @@
   width: fit-content;
   padding-top: 10px;
   padding-bottom: 10px;
-}
-
-.tree-view
-{
-  height: calc(100% - 140px);
 }
 
 .storage-stats-view

@@ -1,0 +1,28 @@
+.folder-tree-item
+{
+  display: flex;
+  background: white;
+  color: #181818;
+  fill: gray;
+  width: 200px;
+  height: 45px;
+  line-height: 45px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.folder-tree-item-dark
+{
+  background: #181818;
+  color: white;
+}
+
+.folder-tree-item > div:first-child
+{
+  padding: 7px;
+}
+
+.folder-tree-item > div:last-child
+{
+  margin-left: 10px;
+}

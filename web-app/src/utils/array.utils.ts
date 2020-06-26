@@ -18,3 +18,17 @@ export function deleteById<T extends WithId>(array: T[], id: string)
 
   if (index !== -1) array.splice(index, 1);
 }
+
+export function isLast<T>(array: T[], item: T): boolean
+{
+  const last = array[array.length - 1];
+
+  return last === item;
+}
+
+export function isLastById<T extends WithId>(array: T[], item: T): boolean
+{
+  const last = array[array.length - 1];
+
+  return item.id === last.id;
+}

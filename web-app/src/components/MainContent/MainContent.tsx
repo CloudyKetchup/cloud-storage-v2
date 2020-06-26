@@ -1,19 +1,41 @@
 import React, { useContext } from "react";
+import { Route, Switch, useHistory } from "react-router";
 
 import DirectoryInfo    from "../DirectoryInfoHeader/DirectoryInfoHeader";
 import DirectoryContent from "../DirectoryContent/DirectoryContent";
 import FetchErrorBanner from "../FetchErrorBanner/FetchErrorBanner";
 import Loading          from "../LoadingComponent/LoadingComponent";
+import TextSubmitModal  from "../TextSubmitModal/TextSubmitModal";
+import ModalShadow      from "../ModalShadow/ModalShadow";
+import FileUploadPane   from "../FileUploadPane/FileUploadPane";
 
 import { AppContext }       from "../../context/AppContext";
 import { DirectoryContext } from "../../context/DirectoryContext";
+import { FoldersContext }   from "../../context/FoldersContext";
+
+import FolderClient from "../../api/FolderClient";
 
 import "./main-content.css";
 
 const MainContent = () =>
 {
-  const { folder } = useContext(DirectoryContext);
   const { loading, errorLoadingApp } = useContext(AppContext);
+  const { folder }    = useContext(DirectoryContext);
+  const { addFolder } = useContext(FoldersContext);
+  const history       = useHistory();
+  const folderClient  = FolderClient.instance();
+
+  const onFolderCreate = async (folderName: string) =>
+  {
+    if (folder)
+    {
+      const { data, error } = await folderClient.create(folder, folderName);
+
+      data && addFolder(data);
+
+      history.push("/");
+    }
+  };
 
   return (
     <div className="main-content">
@@ -21,11 +43,25 @@ const MainContent = () =>
       <Loading
         loading={loading}
         error={errorLoadingApp}
-        fallback={<FetchErrorBanner text="Error happened" height="calc(100% - 20px)"/>}
-        style={{ height: "calc(100% - 20px)" }}
+        fallback={<FetchErrorBanner text="Error happened" height="calc(100% - 90px)"/>}
+        style={{ height: "calc(100% - 90px)" }}
       >
         {folder && <DirectoryContent folder={folder}/>}
       </Loading>
+      <Switch>
+        <Route path="/folder/create" component={() =>
+          <ModalShadow>
+            <TextSubmitModal
+              title="Create new folder"
+              buttonText="Create"
+              placeholder="New folder name"
+              onSubmit={onFolderCreate}
+              onClose={() => history.push("/")}
+            />
+          </ModalShadow>
+        }/>
+        <Route path="/file/upload" component={FileUploadPane}/>
+      </Switch>
     </div>
   );
 };
