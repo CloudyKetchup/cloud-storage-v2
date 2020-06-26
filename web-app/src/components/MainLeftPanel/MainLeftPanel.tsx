@@ -27,7 +27,7 @@ const MainLeftPanel = () =>
         <>
           <CompactSeparator/>
           <TreeView folderId={rootFolder.id} style={{
-            height: "calc(100% - 143px);",
+            height: "calc(100% - 143px)",
             width : "calc(100% - 21px)",
             overflowX : "auto"
           }} />
