@@ -25,24 +25,28 @@ const DirectoryContent: FC<IProps> = ({ folder }) =>
 
   const folderClient = FolderClient.instance();
 
+  const onFetchError = () => setError(true);
+
   useEffect(() =>
   {
     const fetchItems = async () =>
     {
       setLoading(true);
 
+<<<<<<< HEAD
       const { data, error } = await folderClient.getContent(folder.id);
       
       setLoading(false);
+=======
+      const content = await folderClient.getContent(folder.id, onFetchError);
+>>>>>>> master
 
-      if (data)
+      if (content)
       {
-        setFiles(data.files);
-        setFolders(data.folders);
-      } else if (error)
-      {
-        setError(true);
+        setFiles(content.files);
+        setFolders(content.folders);
       }
+      setLoading(false);
     };
 
     fetchItems();

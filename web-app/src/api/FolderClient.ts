@@ -6,7 +6,11 @@ import { DirectoryContent } from "../models/DirectoryContent";
 import { ApiResponse, StatusResponse } from "../models/ApiResponse";
 
 import axios from "axios";
+<<<<<<< HEAD
 import { FolderMoveData } from "../models/MoveData";
+=======
+import { DirectoryContent } from "../models/DirectoryContent";
+>>>>>>> master
 
 class FolderClient
 {
@@ -24,25 +28,25 @@ class FolderClient
     return FolderClient.inst;
   }
 
-  getRoot = () : Promise<ApiResponse<Folder>> =>
+  getRoot = (onError?: () => void) : Promise<Folder | undefined> =>
   (
     axios.get(`${this.URL}/root`)
-      .then(response => ({ data : response.data }))
-      .catch(e => ({ error : e }))
+      .then(response => response.data)
+      .catch(onError)
   );
 
-  getRootStats = () : Promise<ApiResponse<StorageStats>> =>
+  getRootStats = (onError?: () => void) : Promise<StorageStats | undefined> =>
   (
     axios.get(`${this.URL}/root/stats`)
-      .then(response => ({ data : response.data }))
-      .catch(e => ({ error : e }))
+      .then(response => response.data)
+      .catch(onError)
   );
 
-  getContent = (id: string) : Promise<ApiResponse<DirectoryContent>> =>
+  getContent = (id: string, onError?: () => void) : Promise<DirectoryContent | undefined> =>
   (
     axios.get(`${this.URL}/content?id=${id}`)
-      .then(response => ({ data : response.data }))
-      .catch(e => ({ error : e }))
+      .then(response => response.data)
+      .catch(onError)
   )
 
   getPreviousFolders = (id: string) : Promise<ApiResponse<Folder[]>> =>

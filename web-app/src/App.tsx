@@ -1,5 +1,8 @@
 import React, { useContext, useEffect } from 'react';
+<<<<<<< HEAD
 import { Router } from 'react-router';
+=======
+>>>>>>> master
 
 import MainLeftPanel  from './components/MainLeftPanel/MainLeftPanel';
 import Main           from './components/Main/Main';
@@ -22,14 +25,13 @@ const App = () =>
   const { setFolder } = useContext(DirectoryContext);
   const folderClient  = FolderClient.instance();
 
-  useEffect(() =>
+  const onAppError = () =>
   {
-    const fetchRoot = async () =>
-    {
-      const { data, error } = await folderClient.getRoot()
+    setLoading(false);
+    setErrorLoadingApp(true);
+  };
 
-      setLoading(false);
-
+<<<<<<< HEAD
       if (data)
       {
         setFolder(data)
@@ -53,6 +55,24 @@ const App = () =>
         </ThemeProvider>
       </div>
     </Router>
+=======
+  useEffect(() =>
+  {
+    folderClient.getRoot(onAppError).then(root =>
+      {
+        root && setFolder(root)
+        setLoading(false);
+      });
+  }, []);
+
+  return (
+    <div className="App">
+      <ThemeProvider>
+        <MainLeftPanel />
+        <Main />
+      </ThemeProvider>
+    </div>
+>>>>>>> master
   );
 };
 
