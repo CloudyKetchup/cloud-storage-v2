@@ -6,7 +6,7 @@ import { DirectoryContext }     from "../../context/DirectoryContext";
 
 import TreeView from "../TreeView/TreeView";
 
-import { ReactComponent as FolderSvg } from "../../assets/icons/folder.svg";
+import { ReactComponent as ArrowSvg } from "../../assets/icons/arrow-fill-right.svg";
 
 import "./folder-tree-item.css";
 
@@ -27,7 +27,7 @@ const FolderTreeItem: FC<IProps> = ({ folder }) =>
         style={{ background : expanded ? theme === Theme.DARK ? "black" : "#f3f3f3" : "" }}
       >
         <div>
-          <FolderSvg/>
+          <ArrowSvg style={{ transform : expanded ? "rotate(90deg)" : "unset" }}/>
         </div>
         <div>
           <span>{folder.name}</span>
