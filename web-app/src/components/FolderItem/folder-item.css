@@ -9,6 +9,8 @@
 	-moz-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.15);
 	box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.15);
 	position: relative;
+	animation-name: file-item-slide;
+	animation-duration: 0.2s;
 }
 
 .folder-item,
