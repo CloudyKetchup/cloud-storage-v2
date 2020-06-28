@@ -1,9 +1,9 @@
 .file-tree-item
 {
   display: flex;
-  background: white;
-  color: #181818;
-  fill: gray;
+  background: #f0f0f0;
+  color: #202020;
+  fill: #202020;
   width: 220px;
   height: 45px;
   line-height: 45px;
@@ -13,6 +13,7 @@
 {
   background: #181818;
   color: white;
+  fill: white;
 }
 
 .file-tree-item > div:first-child
