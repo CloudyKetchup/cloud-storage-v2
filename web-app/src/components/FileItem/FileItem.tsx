@@ -1,6 +1,8 @@
 import React, { FC, useContext, useEffect } from "react";
 
-import ContextMenu, { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
+import { ContextMenuActions } from "../DirectoryItemContextMenu/ContextMenu";
+import BasicView							from "./BasicView";
+import ImageView							from "./ImageView";
 
 import { API_URL } 							from "../../api/env.config";
 import FileClient 							from "../../api/FileClient";
@@ -10,23 +12,19 @@ import { ContextMenuContext }		from "../../context/ContextMenuContext";
 import { FilesContext } 				from "../../context/FilesContext";
 import { ClipboardContext, ClipbaordItemAction } 		from "../../context/ClipboardContext";
 
-import { ReactComponent as FileSvg } 			from "../../assets/icons/file.svg";
-import { ReactComponent as CalendarSvg } 	from "../../assets/icons/calendar.svg";
-
-import { formatSize } from "../../utils/directory.format.utils";
-
-
 import "./file-item.css";
 
-type IProps = { data : File };
+type IProps = {
+	data 	 : File
+	image? : boolean
+};
 
-const FileItem: FC<IProps> = ({ data }) =>
+const FileItem: FC<IProps> = ({ data, data: { id, name, path, extension }, image }) =>
 {
 	const { theme }							= useContext(ThemeContext);
 	const { menuId, setMenuId } = useContext(ContextMenuContext);
 	const { setItem } 					= useContext(ClipboardContext);
 	const { deleteFile } 				= useContext(FilesContext);
-	const { id, name, path, size, dateCreated, extension } = data;
 	const fileClient						= FileClient.instance();
 
 	useEffect(() =>
@@ -50,11 +48,6 @@ const FileItem: FC<IProps> = ({ data }) =>
 			};
 		}
 	});
-
-	const formatName = (name: string): string =>
-	{
-		return name.length > 12 ? `${name.substring(0, 11)}...` : name;
-	};
 
 	const onDownload = async () =>
 	{
@@ -108,33 +101,12 @@ const FileItem: FC<IProps> = ({ data }) =>
 			id={`file-item-${id}`}
 			className={`file-item ${ theme === Theme.DARK ? "file-item-dark" : "" }`}
 		>
-			<div>
-				<div className="file-item-icon">
-					<div>
-						<FileSvg/>
-					</div>
-				</div>
-				<div className="file-item-info">
-					<div>{formatName(name)}</div>
-					<div>{formatSize(size)}</div>
-				</div>
-			</div>
 			{
-				menuId === id
+				image
 				?
-				<ContextMenu actions={actions}/>
+				<ImageView file={data} contextMenu={id === menuId} actions={actions} />
 				:
-				<div className="file-item-footer">
-					<div className="file-item-date">
-						<div>
-							<CalendarSvg/>
-						</div>
-						<div>
-							<h5>{dateCreated}</h5>
-						</div>
-					</div>
-					<div>{extension}</div>
-				</div>
+				<BasicView file={data} contextMenu={id === menuId} actions={actions} />
 			}
 		</div>
 	);

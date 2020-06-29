@@ -1,9 +1,9 @@
 .folder-tree-item
 {
   display: flex;
-  background: white;
-  color: #181818;
-  fill: gray;
+  background: #f0f0f0;
+  color: #202020;
+  fill: #202020;
   width: 200px;
   height: 45px;
   line-height: 45px;
@@ -11,18 +11,39 @@
   padding-right: 10px;
 }
 
+.folder-tree-item,
+.folder-tree-item > *
+{
+  transition: 0.2s;
+}
+
 .folder-tree-item-dark
 {
   background: #181818;
   color: white;
+  fill: white;
+}
+
+.folder-tree-item > div:first-child svg
+{
+  height: 20px;
+  width: 20px;
+  margin-top: -10px;
+}
+
+.folder-tree-item > div:first-child
+/* .folder-tree-item > div:nth-child(2) */
+{
+  padding: 7px;
+  padding-left: 3px;
 }
 
 .folder-tree-item > div:first-child
 {
-  padding: 7px;
+  padding-top: 5px;
 }
 
 .folder-tree-item > div:last-child
 {
-  margin-left: 10px;
+  margin-left: 5px;
 }

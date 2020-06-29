@@ -1,5 +1,7 @@
 import React, { useContext } from "react";
 
+import { File } from "../../models/Directory";
+
 import { CompactSeparator } from "../CompactSeparator/CompactSeparator";
 import EmptyDirectory				from "../EmptyDirectory/EmptyDirectory";
 import FolderItem 					from "../FolderItem/FolderItem";
@@ -27,6 +29,20 @@ const DirectoryItems = () =>
 	const { folders } = useContext(FoldersContext);
 	const { item }  	= useContext(ClipboardContext);
 
+	const isImage = (file: File): boolean =>
+	{
+		switch (file.extension)
+		{
+			case "jpeg":
+			case "jpg":
+			case "png":
+			case "gif":
+				return true;
+			default:
+				return false;
+		}
+	};
+
 	return (
 		<>
 			{
@@ -44,9 +60,15 @@ const DirectoryItems = () =>
 							<>
 								<CompactSeparator/>
 								<div>
+									<ItemsViewHeader title="Images"/>
+									<div className="image-items-grid">
+										{files.filter(isImage).flatMap(f => <FileItem key={f.id} data={f} image={true}/>)}
+									</div>
+								</div>
+								<div>
 									<ItemsViewHeader title="Files"/>
 									<div className="file-items-grid">
-										{files.flatMap(f => <FileItem key={f.id} data={f}/>)}
+										{files.filter(f => !isImage(f)).flatMap(f => <FileItem key={f.id} data={f}/>)}
 									</div>
 								</div>
 							</>
