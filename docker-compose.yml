@@ -2,20 +2,20 @@ version: '3'
 
 services:
   nginx:
+    container_name: cloud-storage-nginx
     image: reverseproxy
     build:
       dockerfile: Dockerfile
       context: ./nginx
     depends_on:
       - web-app
+      - gateway
     environment:
       NGINX_PORT: 80
     networks:
       - nginx
     ports:
       - 80:80
-    healthcheck:
-      test: exit 0
   
   # database (MongoDB)
   mongo-db:
@@ -54,10 +54,9 @@ services:
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
     networks:
+      - nginx
       - backend
       - gateway
-    ports:
-      - 8080:8080
   
   # directory service
   directory-service:
@@ -110,11 +109,8 @@ services:
       dockerfile: Dockerfile
     depends_on: 
       - gateway
-    environment:
-      API_URL: http://gateway:8080
     networks:
       - nginx
-      - gateway
 
 networks:
   nginx:
